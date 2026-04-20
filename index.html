@@ -6,7 +6,14 @@
 <title>🥃 위스키 테이스팅 노트</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{--bg:#F7F4EF;--card:#FFF;--border:rgba(0,0,0,0.08);--border-md:rgba(0,0,0,0.14);--text:#1C1A17;--text-sub:#6B6560;--text-hint:#A09990;--amber:#C47D2B;--amber-light:#FDF3E3;--amber-dark:#8B5210;--brown:#4A1B0C;--blue-dark:#042C53;--blue-light:#E6F1FB;--radius:12px;--radius-sm:8px}
+:root{
+  --bg:#F7F4EF;--card:#FFF;
+  --border:rgba(0,0,0,0.08);--border-md:rgba(0,0,0,0.14);
+  --text:#1C1A17;--text-sub:#6B6560;--text-hint:#A09990;
+  --amber:#C47D2B;--amber-light:#FDF3E3;--amber-dark:#8B5210;
+  --brown:#4A1B0C;--blue-dark:#042C53;
+  --radius:12px;--radius-sm:8px;
+}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,'Apple SD Gothic Neo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 nav{background:var(--card);border-bottom:.5px solid var(--border-md);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100}
@@ -19,84 +26,109 @@ nav{background:var(--card);border-bottom:.5px solid var(--border-md);padding:0 1
 .section{margin-bottom:1.25rem}
 .section-label{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-hint);margin-bottom:.5rem}
 .card{background:var(--card);border:.5px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-.field{display:flex;flex-direction:column;gap:4px}
-.field label{font-size:11px;color:var(--text-sub);font-weight:500}
-.field input,.field select,.field textarea{font-size:13px;border:.5px solid var(--border-md);border-radius:var(--radius-sm);padding:8px 10px;background:var(--bg);color:var(--text);width:100%;outline:none;font-family:inherit;transition:border-color .15s}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--amber)}
-.field textarea{resize:none;line-height:1.6}
 .divider{height:.5px;background:var(--border);margin:1rem 0}
 .sub-label{font-size:11px;color:var(--text-hint);margin-bottom:5px;font-weight:500}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;color:var(--text-sub);font-weight:500}
+.field input,.field select,.field textarea{
+  font-size:13px;border:.5px solid var(--border-md);border-radius:var(--radius-sm);
+  padding:8px 10px;background:var(--bg);color:var(--text);
+  width:100%;outline:none;font-family:inherit;transition:border-color .15s;
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--amber)}
+.field textarea{resize:none;line-height:1.6}
+
+/* ── 레이아웃 그리드: 인라인 스타일로만 처리해서 미디어쿼리 충돌 방지 ── */
+.row-flex{display:flex;flex-direction:column;gap:10px}
+
 .img-area{border:1.5px dashed var(--border-md);border-radius:var(--radius);width:100%;aspect-ratio:1/1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:.15s;position:relative;overflow:hidden;background:var(--bg)}
 .img-area:hover{border-color:var(--amber);background:var(--amber-light)}
-.img-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.img-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
 .img-area-label{font-size:12px;color:var(--text-hint);text-align:center;line-height:1.6;pointer-events:none}
-.img-btns{display:flex;gap:8px;margin-top:8px}
-.img-btn{flex:1;padding:9px;border:.5px solid var(--border-md);border-radius:var(--radius-sm);background:var(--bg);color:var(--text-sub);font-size:12px;cursor:pointer;text-align:center;transition:.15s;position:relative;overflow:hidden}
-.img-btn input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
-.img-btn:hover{background:var(--amber-light);color:var(--amber-dark);border-color:var(--amber)}
+.img-remove{position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:14px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
 .tags-wrap{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
 .tag{font-size:12px;padding:5px 11px;border:.5px solid var(--border-md);border-radius:20px;background:var(--bg);color:var(--text-sub);cursor:pointer;transition:.15s;user-select:none}
 .tag:hover{background:var(--card);color:var(--text)}
-.tag.on-brown{background:var(--brown);border-color:var(--brown);color:#F5C4B3}
-.tag.on-blue{background:var(--blue-dark);border-color:var(--blue-dark);color:#B5D4F4}
-.tag.on-amber{background:var(--amber);border-color:var(--amber);color:#fff}
+.tag.sel-brown{background:var(--brown);border-color:var(--brown);color:#F5C4B3}
+.tag.sel-blue{background:var(--blue-dark);border-color:var(--blue-dark);color:#B5D4F4}
+.tag.sel-amber{background:var(--amber);border-color:var(--amber);color:#fff}
+
 .color-strip{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
 .color-dot{width:30px;height:30px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:.15s}
 .color-dot:hover{transform:scale(1.1)}
 .color-dot.active{border-color:var(--text)}
-.score-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.score-row label{font-size:12px;color:var(--text-sub);font-weight:500;min-width:76px}
+
+.score-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.score-row label{font-size:12px;color:var(--text-sub);font-weight:500;min-width:80px}
 .score-row input[type=range]{flex:1;accent-color:var(--amber)}
 .score-val{font-size:13px;font-weight:600;color:var(--text);min-width:24px;text-align:right}
 .score-max{font-size:11px;color:var(--text-hint)}
 .total-row{display:flex;align-items:center;justify-content:space-between}
 .total-num{font-size:40px;font-weight:700;color:var(--amber-dark)}
-#radar-wrap{display:flex;justify-content:center;margin:1rem 0 0}
+#radar-wrap{display:flex;justify-content:center;margin-top:1rem}
+
 .btn-save{width:100%;padding:13px;border-radius:var(--radius);background:var(--amber-dark);color:#fff;font-size:14px;font-weight:600;border:none;cursor:pointer;transition:.15s}
 .btn-save:hover{background:var(--brown)}
 .btn-save:active{transform:scale(.98)}
 .btn-save:disabled{background:var(--text-hint);cursor:not-allowed}
+
+/* MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:flex-end;justify-content:center}
 .modal-overlay.open{display:flex}
 .modal{background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:720px;max-height:90vh;overflow-y:auto;padding:1.5rem;position:relative}
 .modal-handle{width:40px;height:4px;background:var(--border-md);border-radius:2px;margin:0 auto 1.5rem}
 .modal-close{position:absolute;top:1rem;right:1rem;width:32px;height:32px;border-radius:50%;background:var(--bg);border:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+
 .share-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:1rem}
 .share-btn{padding:14px;border-radius:var(--radius);border:.5px solid var(--border-md);background:var(--bg);color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:.15s;text-align:center}
 .share-btn:hover{background:var(--amber-light);border-color:var(--amber);color:var(--amber-dark)}
+
+/* COLLECTION */
 .list-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
 .search-wrap{position:relative;margin-bottom:1rem}
 .search-wrap input{width:100%;padding:10px 14px 10px 38px;border:.5px solid var(--border-md);border-radius:var(--radius);background:var(--card);font-size:13px;color:var(--text);outline:none;font-family:inherit}
 .search-wrap input:focus{border-color:var(--amber)}
 .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-hint);font-size:14px;pointer-events:none}
 .notes-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.note-card{background:var(--card);border:.5px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:.15s}
-.note-card:hover{border-color:var(--border-md);transform:translateY(-1px)}
-.note-img{width:100%;aspect-ratio:1/1;background:var(--amber-light);display:flex;align-items:center;justify-content:center;font-size:40px;overflow:hidden}
+.note-card{background:var(--card);border:.5px solid var(--border);border-radius:var(--radius);overflow:visible;transition:.15s;position:relative}
+.note-card:hover{border-color:var(--border-md)}
+.note-img{width:100%;aspect-ratio:1/1;background:var(--amber-light);display:flex;align-items:center;justify-content:center;font-size:40px;overflow:hidden;cursor:pointer;border-radius:var(--radius) var(--radius) 0 0}
 .note-img img{width:100%;height:100%;object-fit:cover}
-.note-body{padding:10px 12px;text-align:center}
+.note-body{padding:10px 12px;text-align:center;cursor:pointer}
 .note-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
 .note-meta-s{font-size:11px;color:var(--text-sub);margin-bottom:5px}
 .note-score-b{font-size:20px;font-weight:700;color:var(--amber-dark)}
 .note-score-b span{font-size:10px;color:var(--text-hint);font-weight:400}
-.note-actions{display:flex;gap:6px;margin-top:6px;justify-content:center;padding-bottom:10px}
-.note-act-btn{font-size:11px;padding:4px 10px;border-radius:20px;border:.5px solid var(--border-md);background:var(--bg);color:var(--text-sub);cursor:pointer;transition:.15s}
-.note-act-btn:hover{background:var(--amber-light);color:var(--amber-dark);border-color:var(--amber)}
-.note-act-btn.del:hover{background:#FEE2E2;color:#c00;border-color:#fca5a5}
+
+/* ··· 메뉴 */
+.card-menu-btn{position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;border:none;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;z-index:10;letter-spacing:1px;line-height:1}
+.card-menu-dropdown{display:none;position:absolute;top:40px;right:8px;background:var(--card);border:.5px solid var(--border-md);border-radius:var(--radius-sm);overflow:hidden;z-index:30;min-width:90px;box-shadow:0 4px 16px rgba(0,0,0,.15)}
+.card-menu-dropdown.open{display:block}
+.card-menu-dropdown button{width:100%;padding:10px 14px;border:none;background:transparent;font-size:13px;text-align:left;cursor:pointer;display:block;font-family:inherit;color:var(--text)}
+.card-menu-dropdown button:hover{background:var(--bg)}
+.card-menu-dropdown button.del{color:#c00}
+.card-menu-dropdown button.del:hover{background:#FEE2E2}
+.menu-sep{height:.5px;background:var(--border)}
+
 .empty-state{text-align:center;padding:4rem 0;color:var(--text-hint);grid-column:1/-1}
 .empty-state p{font-size:14px;margin-top:.5rem}
+
+/* DETAIL */
 .detail-row{display:flex;gap:8px;margin-bottom:.5rem}
 .detail-label{font-size:12px;color:var(--text-hint);min-width:72px}
 .detail-val{font-size:13px;color:var(--text)}
 .pill{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--amber-light);color:var(--amber-dark);display:inline-block;margin:2px}
+.score-box{background:var(--bg);border-radius:var(--radius-sm);padding:8px 4px;text-align:center}
+.score-box-num{font-size:18px;font-weight:700;color:var(--amber-dark)}
+.score-box-label{font-size:10px;color:var(--text-hint)}
+
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--text);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;transition:transform .3s;z-index:999;white-space:nowrap}
 .toast.show{transform:translateX(-50%) translateY(0)}
-@media(max-width:520px){.grid2,.grid3{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
+
 <nav>
   <div class="nav-logo">🥃 위스키 노트</div>
   <div class="nav-tabs">
@@ -105,7 +137,7 @@ nav{background:var(--card);border-bottom:.5px solid var(--border-md);padding:0 1
   </div>
 </nav>
 
-<!-- FORM -->
+<!-- ===== FORM ===== -->
 <div class="page active" id="page-form">
 
   <div class="section">
@@ -118,38 +150,92 @@ nav{background:var(--card);border-bottom:.5px solid var(--border-md);padding:0 1
           <div class="img-area-label">1 : 1 비율 권장</div>
         </div>
       </div>
-
     </div>
   </div>
 
   <div class="section">
     <div class="section-label">기본 정보</div>
     <div class="card">
-      <div style="display:flex;flex-direction:column;gap:10px">
-        <div class="field"><label>위스키 이름</label><input type="text" id="whisky_name" placeholder="예) Ardbeg"></div>
-        <div class="grid2">
-          <div class="field"><label>숙성 연도</label><input type="text" id="age" placeholder="10Y / NAS"></div>
-          <div class="field"><label>도수 (ABV)</label><input type="text" id="abv" placeholder="46%"></div>
+      <div class="row-flex">
+
+        <!-- 위스키 이름 (1열 전체) -->
+        <div class="field">
+          <label>위스키 이름</label>
+          <input type="text" id="f-name" placeholder="예) Ardbeg">
         </div>
-        <div class="field"><label>지역</label>
-          <select id="region"><option value="">선택</option><option>Islay</option><option>Highland</option><option>Speyside</option><option>Lowland</option><option>Campbeltown</option><option>Island</option><option>Ireland</option><option>Japan</option><option>USA</option><option>Canada</option><option>기타</option></select>
+
+        <!-- 숙성연도 + 도수 (2열 — 인라인 grid로 모바일 깨짐 방지) -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%">
+          <div class="field">
+            <label>숙성 연도</label>
+            <input type="text" id="f-age" placeholder="10Y / NAS">
+          </div>
+          <div class="field">
+            <label>도수 (ABV)</label>
+            <input type="text" id="f-abv" placeholder="46%">
+          </div>
         </div>
-        <div class="field"><label>증류소</label><input type="text" id="distillery" placeholder="예) Ardbeg"></div>
-        <div class="field"><label>테이스팅 날짜</label><input type="date" id="tasting_date"></div>
-        <div class="grid2">
-          <div class="field"><label>제조 년월</label><input type="text" id="manufacture_date" placeholder="예) 2021.03"></div>
-          <div class="field"><label>가격 / 구입처</label><input type="text" id="price" placeholder="예) 85,000원 / 이마트"></div>
+
+        <!-- 지역 + 증류소 + 테이스팅날짜 (3열) -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;width:100%">
+          <div class="field">
+            <label>지역</label>
+            <select id="f-region">
+              <option value="">선택</option>
+              <option>Islay</option><option>Highland</option><option>Speyside</option>
+              <option>Lowland</option><option>Campbeltown</option><option>Island</option>
+              <option>Ireland</option><option>Japan</option><option>USA</option>
+              <option>Canada</option><option>기타</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>증류소</label>
+            <input type="text" id="f-distillery" placeholder="예) Ardbeg">
+          </div>
+          <div class="field">
+            <label>테이스팅 날짜</label>
+            <input type="date" id="f-tasting-date">
+          </div>
         </div>
+
+        <!-- 제조년월 + 가격/구입처 (2열) -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%">
+          <div class="field">
+            <label>제조 년월</label>
+            <input type="text" id="f-mfg-date" placeholder="예) 2021.03">
+          </div>
+          <div class="field">
+            <label>가격 / 구입처</label>
+            <input type="text" id="f-price" placeholder="예) 85,000원">
+          </div>
+        </div>
+
       </div>
+
       <div class="divider"></div>
       <div class="sub-label">분류 (Classification)</div>
       <div class="tags-wrap">
-        <span class="tag" data-g="class">싱글 몰트</span><span class="tag" data-g="class">싱글 그레인</span><span class="tag" data-g="class">블렌디드</span><span class="tag" data-g="class">블렌디드 몰트</span><span class="tag" data-g="class">블렌디드 그레인</span>
+        <span class="tag" data-g="class">싱글 몰트</span>
+        <span class="tag" data-g="class">싱글 그레인</span>
+        <span class="tag" data-g="class">블렌디드</span>
+        <span class="tag" data-g="class">블렌디드 몰트</span>
+        <span class="tag" data-g="class">블렌디드 그레인</span>
       </div>
+
       <div class="divider"></div>
       <div class="sub-label">캐스크 타입</div>
       <div class="tags-wrap">
-        <span class="tag" data-g="cask">Ex-Bourbon</span><span class="tag" data-g="cask">Ex-Sherry (Oloroso)</span><span class="tag" data-g="cask">Ex-Sherry (PX)</span><span class="tag" data-g="cask">Ex-Wine</span><span class="tag" data-g="cask">Ex-Port</span><span class="tag" data-g="cask">Ex-Rum</span><span class="tag" data-g="cask">Ex-Cognac</span><span class="tag" data-g="cask">New Oak</span><span class="tag" data-g="cask">Virgin Oak</span><span class="tag" data-g="cask">STR</span><span class="tag" data-g="cask">Mizunara</span>
+        <span class="tag" data-g="cask">Ex-Bourbon</span>
+        <span class="tag" data-g="cask">Ex-Sherry (Oloroso)</span>
+        <span class="tag" data-g="cask">Ex-Sherry (PX)</span>
+        <span class="tag" data-g="cask">Ex-Wine</span>
+        <span class="tag" data-g="cask">Ex-Port</span>
+        <span class="tag" data-g="cask">Ex-Rum</span>
+        <span class="tag" data-g="cask">Ex-Cognac</span>
+        <span class="tag" data-g="cask">New Oak</span>
+        <span class="tag" data-g="cask">Virgin Oak</span>
+        <span class="tag" data-g="cask">STR</span>
+        <span class="tag" data-g="cask">Mizunara</span>
       </div>
     </div>
   </div>
@@ -157,7 +243,10 @@ nav{background:var(--card);border-bottom:.5px solid var(--border-md);padding:0 1
   <div class="section">
     <div class="section-label">컬러</div>
     <div class="card">
-      <div class="field"><label>색상 메모</label><input type="text" id="color_note" placeholder="예) 딥 골드, 앰버..."></div>
+      <div class="field">
+        <label>색상 메모</label>
+        <input type="text" id="f-color-note" placeholder="예) 딥 골드, 앰버...">
+      </div>
       <div class="color-strip" id="colorStrip">
         <div class="color-dot" data-c="연한 황금" style="background:#F5E6A3"></div>
         <div class="color-dot" data-c="황금" style="background:#D4A827"></div>
@@ -222,14 +311,16 @@ nav{background:var(--card);border-bottom:.5px solid var(--border-md);padding:0 1
     </div>
   </div>
 
+  <!-- 점수: 5항목 각 20점, 총 100점 -->
   <div class="section">
     <div class="section-label">항목별 점수</div>
     <div class="card">
-      <div class="score-row"><label>향 (Nose)</label><input type="range" min="1" max="20" value="16" id="nose_score" oninput="updateScore()"><span class="score-val" id="v-nose">16</span><span class="score-max">/20</span></div>
-      <div class="score-row"><label>맛 (Palate)</label><input type="range" min="1" max="20" value="16" id="palate_score" oninput="updateScore()"><span class="score-val" id="v-palate">16</span><span class="score-max">/20</span></div>
-      <div class="score-row"><label>피니쉬</label><input type="range" min="1" max="20" value="16" id="finish_score" oninput="updateScore()"><span class="score-val" id="v-finish">16</span><span class="score-max">/20</span></div>
-      <div class="score-row"><label>바디 & 질감</label><input type="range" min="1" max="20" value="16" id="body_texture_score" oninput="updateScore()"><span class="score-val" id="v-body">16</span><span class="score-max">/20</span></div>
-      <div class="score-row"><label>밸런스</label><input type="range" min="1" max="20" value="16" id="balance_score" oninput="updateScore()"><span class="score-val" id="v-balance">16</span><span class="score-max">/20</span></div>      <div class="divider"></div>
+      <div class="score-row"><label>향 (Nose)</label><input type="range" min="1" max="20" value="16" id="s-nose" oninput="updateScore()"><span class="score-val" id="sv-nose">16</span><span class="score-max">/20</span></div>
+      <div class="score-row"><label>맛 (Palate)</label><input type="range" min="1" max="20" value="16" id="s-palate" oninput="updateScore()"><span class="score-val" id="sv-palate">16</span><span class="score-max">/20</span></div>
+      <div class="score-row"><label>피니쉬</label><input type="range" min="1" max="20" value="16" id="s-finish" oninput="updateScore()"><span class="score-val" id="sv-finish">16</span><span class="score-max">/20</span></div>
+      <div class="score-row"><label>바디 & 질감</label><input type="range" min="1" max="20" value="16" id="s-body" oninput="updateScore()"><span class="score-val" id="sv-body">16</span><span class="score-max">/20</span></div>
+      <div class="score-row"><label>밸런스</label><input type="range" min="1" max="20" value="16" id="s-balance" oninput="updateScore()"><span class="score-val" id="sv-balance">16</span><span class="score-max">/20</span></div>
+      <div class="divider"></div>
       <div class="total-row">
         <span style="font-size:13px;color:var(--text-sub);font-weight:500">총점</span>
         <div style="display:flex;align-items:baseline;gap:6px">
@@ -237,63 +328,85 @@ nav{background:var(--card);border-bottom:.5px solid var(--border-md);padding:0 1
           <span style="font-size:14px;color:var(--text-hint)">/ 100</span>
         </div>
       </div>
-      <div id="radar-wrap"><svg id="radarChart" width="260" height="260" xmlns="http://www.w3.org/2000/svg"></svg></div>
+      <div id="radar-wrap">
+        <svg id="radarSVG" width="260" height="260" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
     </div>
   </div>
 
   <div class="section">
     <div class="section-label">총평 & 추천</div>
     <div class="card">
-      <div class="field" style="margin-bottom:10px"><label>한 줄 총평</label><input type="text" id="one_line" placeholder="예) 강렬한 피트와 달콤한 바닐라의 절묘한 균형"></div>
-      <div class="grid2" style="margin-bottom:10px">
-        <div class="field"><label>추천 페어링</label><input type="text" id="pairing" placeholder="예) 다크 초콜릿"></div>
-        <div class="field"><label>재구매 의향</label>
-          <select id="repurchase"><option>★★★★★ 반드시</option><option>★★★★ 기회가 되면</option><option>★★★ 가격 따라</option><option>★★ 보류</option><option>★ 비추</option></select>
+      <div class="field" style="margin-bottom:10px">
+        <label>한 줄 총평</label>
+        <input type="text" id="f-one-line" placeholder="예) 강렬한 피트와 달콤한 바닐라의 절묘한 균형">
+      </div>
+      <!-- 추천페어링 + 재구매 (2열) -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;margin-bottom:10px">
+        <div class="field">
+          <label>추천 페어링</label>
+          <input type="text" id="f-pairing" placeholder="예) 다크 초콜릿">
+        </div>
+        <div class="field">
+          <label>재구매 의향</label>
+          <select id="f-repurchase">
+            <option>★★★★★ 반드시</option>
+            <option>★★★★ 기회가 되면</option>
+            <option>★★★ 가격 따라</option>
+            <option>★★ 보류</option>
+            <option>★ 비추</option>
+          </select>
         </div>
       </div>
-      <div class="field"><label>총평</label><textarea id="extra_memo" rows="3" placeholder="시음 전반에 대한 총평을 작성해 주세요..."></textarea></div>
+      <div class="field">
+        <label>총평</label>
+        <textarea id="f-memo" rows="3" placeholder="시음 전반에 대한 총평을 작성해 주세요..."></textarea>
+      </div>
     </div>
   </div>
 
   <button class="btn-save" id="saveBtn" onclick="saveNote()">저장하기</button>
 </div>
 
-<!-- LIST -->
+<!-- ===== LIST ===== -->
 <div class="page" id="page-list">
   <div class="list-header">
     <h2 style="font-size:15px;font-weight:600">내 컬렉션</h2>
-    <span class="list-count" id="list-count">0개</span>
+    <span style="font-size:12px;color:var(--text-hint)" id="list-count">0개</span>
   </div>
   <div class="search-wrap">
     <span class="search-icon">🔍</span>
     <input type="text" id="searchInput" placeholder="위스키 이름, 향, 맛, 피니쉬, 바디..." oninput="filterNotes()">
   </div>
   <div class="notes-grid" id="notes-list">
-    <div class="empty-state"><div style="font-size:48px">🥃</div><p>아직 기록이 없어요.<br>첫 테이스팅 노트를 작성해보세요!</p></div>
+    <div class="empty-state">
+      <div style="font-size:48px">🥃</div>
+      <p>아직 기록이 없어요.<br>첫 테이스팅 노트를 작성해보세요!</p>
+    </div>
   </div>
 </div>
 
 <!-- DETAIL MODAL -->
-<div class="modal-overlay" id="detailModal" onclick="closeModal('detailModal',event)">
+<div class="modal-overlay" id="detailModal" onclick="closeMod('detailModal',event)">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal('detailModal')">✕</button>
+    <button class="modal-close" onclick="closeMod('detailModal')">✕</button>
     <div class="modal-handle"></div>
     <div id="detail-content"></div>
   </div>
 </div>
 
 <!-- SHARE MODAL -->
-<div class="modal-overlay" id="shareModal" onclick="closeModal('shareModal',event)">
+<div class="modal-overlay" id="shareModal" onclick="closeMod('shareModal',event)">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal('shareModal')">✕</button>
+    <button class="modal-close" onclick="closeMod('shareModal')">✕</button>
     <div class="modal-handle"></div>
     <div style="font-size:16px;font-weight:600;margin-bottom:.5rem">공유하기</div>
     <div style="font-size:13px;color:var(--text-sub);margin-bottom:1rem">테이스팅 노트를 저장하거나 공유하세요</div>
     <div id="share-preview" style="background:var(--bg);border-radius:var(--radius);padding:1rem;margin-bottom:1rem"></div>
     <div class="share-btns">
-      <button class="share-btn" onclick="saveToPhotos()">📷 이미지로 저장</button>
-      <button class="share-btn" onclick="shareToSNS('instagram')">📸 인스타그램</button>
-      <button class="share-btn" onclick="shareToSNS('twitter')">🐦 트위터 / X</button>
+      <button class="share-btn" onclick="saveToImage()">📷 이미지로 저장</button>
+      <button class="share-btn" onclick="shareIG()">📸 인스타그램</button>
+      <button class="share-btn" onclick="shareTwitter()">🐦 트위터 / X</button>
       <button class="share-btn" onclick="copyLink()">🔗 링크 복사</button>
     </div>
   </div>
@@ -302,363 +415,456 @@ nav{background:var(--card);border-bottom:.5px solid var(--border-md);padding:0 1
 <div class="toast" id="toast"></div>
 
 <script>
-const SB_URL='https://zsqeoxisqzymeramfmqc.supabase.co';
-const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzcWVveGlzcXp5bWVyYW1mbXFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2NzY1NTksImV4cCI6MjA5MjI1MjU1OX0.NpUX1zmiS-KUulNrHx6_2_6UGDexpRZLZTxD6iGnt-g';
-const sb=supabase.createClient(SB_URL,SB_KEY);
+/* ── Supabase ── */
+const SB = supabase.createClient(
+  'https://zsqeoxisqzymeramfmqc.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzcWVveGlzcXp5bWVyYW1mbXFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2NzY1NTksImV4cCI6MjA5MjI1MjU1OX0.NpUX1zmiS-KUulNrHx6_2_6UGDexpRZLZTxD6iGnt-g'
+);
 
-let imgBase64=null,selectedColor='',allNotes=[],lastSaved=null,currentTotal=80;
+/* ── State ── */
+let imgBase64 = null;
+let selectedColor = '';
+let allNotes = [];
+let lastSaved = null;
+let animTotal = 80;
+let editingId = null;
 
-function showPage(p,btn){
-  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));
-  document.getElementById('page-'+p).classList.add('active');
-  if(btn)btn.classList.add('active');
-  if(p==='list')loadNotes();
+/* ── Navigation ── */
+function showPage(p, btn) {
+  document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(x => x.classList.remove('active'));
+  document.getElementById('page-' + p).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (p === 'list') loadNotes();
 }
 
-document.getElementById('colorStrip').addEventListener('click',e=>{
-  const d=e.target.closest('.color-dot');if(!d)return;
-  document.querySelectorAll('.color-dot').forEach(x=>x.classList.remove('active'));
-  d.classList.add('active');selectedColor=d.dataset.c;
-  document.getElementById('color_note').value=d.dataset.c;
+/* ── Color ── */
+document.getElementById('colorStrip').addEventListener('click', e => {
+  const d = e.target.closest('.color-dot');
+  if (!d) return;
+  document.querySelectorAll('.color-dot').forEach(x => x.classList.remove('active'));
+  d.classList.add('active');
+  selectedColor = d.dataset.c;
+  document.getElementById('f-color-note').value = d.dataset.c;
 });
 
-document.querySelectorAll('.tag').forEach(t=>{
-  t.addEventListener('click',()=>{
-    const g=t.dataset.g;
-    const cls=g==='cask'||g==='class'?'on-blue':g==='body'?'on-amber':'on-brown';
-    if(g==='class'){
-      document.querySelectorAll('.tag[data-g="class"]').forEach(x=>x.classList.remove('on-blue'));
-      t.classList.add('on-blue');
+/* ── Tags ── */
+document.querySelectorAll('.tag').forEach(t => {
+  t.addEventListener('click', () => {
+    const g = t.dataset.g;
+    const cls = (g === 'cask' || g === 'class') ? 'sel-blue' : (g === 'body') ? 'sel-amber' : 'sel-brown';
+    if (g === 'class') {
+      document.querySelectorAll('.tag[data-g="class"]').forEach(x => x.classList.remove('sel-blue'));
+      t.classList.add('sel-blue');
     } else {
       t.classList.toggle(cls);
     }
   });
 });
 
-function getTags(g){
+function getTags(g) {
   return [...document.querySelectorAll(`.tag[data-g="${g}"]`)]
-    .filter(t=>t.classList.contains('on-brown')||t.classList.contains('on-blue')||t.classList.contains('on-amber'))
-    .map(t=>t.textContent);
+    .filter(t => t.classList.contains('sel-brown') || t.classList.contains('sel-blue') || t.classList.contains('sel-amber'))
+    .map(t => t.textContent);
 }
 
-function loadImg(input){
-  const f=input.files[0];if(!f)return;
-  const r=new FileReader();
-  r.onload=e=>{
-    imgBase64=e.target.result;
-    document.getElementById('imgSlot').innerHTML=`<div style="position:relative;aspect-ratio:1/1"><img src="${imgBase64}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius);display:block"><button onclick="removeImg()" style="position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;border:none;cursor:pointer;font-size:14px">✕</button></div>`;
+/* ── Image ── */
+function loadImg(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    imgBase64 = e.target.result;
+    document.getElementById('imgSlot').innerHTML = `
+      <div style="position:relative;aspect-ratio:1/1">
+        <img src="${imgBase64}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius);display:block">
+        <button class="img-remove" onclick="removeImg()">✕</button>
+      </div>`;
   };
-  r.readAsDataURL(f);
+  reader.readAsDataURL(file);
 }
 
-function removeImg(){
-  imgBase64=null;
-  document.getElementById('imgSlot').innerHTML=`<div class="img-area"><input type="file" accept="image/*" onchange="loadImg(this)"><span style="font-size:28px;pointer-events:none">📷</span><div class="img-area-label">1 : 1 비율 권장</div></div>`;
+function removeImg() {
+  imgBase64 = null;
+  document.getElementById('imgSlot').innerHTML = `
+    <div class="img-area">
+      <input type="file" accept="image/*" onchange="loadImg(this)">
+      <span style="font-size:28px;pointer-events:none">📷</span>
+      <div class="img-area-label">1 : 1 비율 권장</div>
+    </div>`;
 }
 
-function updateScore(){
-  const n=+document.getElementById('nose_score').value;
-  const pa=+document.getElementById('palate_score').value;
-  const fi=+document.getElementById('finish_score').value;
-  const bo=+document.getElementById('body_texture_score').value;
-  const ba=+document.getElementById('balance_score').value;
-
-  document.getElementById('v-nose').textContent=n;
-  document.getElementById('v-palate').textContent=pa;
-  document.getElementById('v-finish').textContent=fi;
-  document.getElementById('v-body').textContent=bo;
-  document.getElementById('v-balance').textContent=ba;
-  const total=n+pa+fi+bo+ba;
-  animateTotal(total);
-  drawRadar([n/20,pa/20,fi/20,bo/20,ba/20]);
+/* ── Score & Radar ── */
+function getScores() {
+  return {
+    nose:    +document.getElementById('s-nose').value,
+    palate:  +document.getElementById('s-palate').value,
+    finish:  +document.getElementById('s-finish').value,
+    body:    +document.getElementById('s-body').value,
+    balance: +document.getElementById('s-balance').value,
+  };
 }
 
-function animateTotal(target){
-  const el=document.getElementById('total-score');
-  const start=currentTotal,diff=target-start,dur=300,t0=Date.now();
-  function step(){
-    const p=Math.min(1,(Date.now()-t0)/dur);
-    el.textContent=Math.round(start+diff*p);
-    if(p<1)requestAnimationFrame(step);
+function updateScore() {
+  const s = getScores();
+  document.getElementById('sv-nose').textContent    = s.nose;
+  document.getElementById('sv-palate').textContent  = s.palate;
+  document.getElementById('sv-finish').textContent  = s.finish;
+  document.getElementById('sv-body').textContent    = s.body;
+  document.getElementById('sv-balance').textContent = s.balance;
+  animateTotal(s.nose + s.palate + s.finish + s.body + s.balance);
+  drawRadar([s.nose/20, s.palate/20, s.finish/20, s.body/20, s.balance/20]);
+}
+
+function animateTotal(target) {
+  const el = document.getElementById('total-score');
+  const start = animTotal, diff = target - start, dur = 300, t0 = Date.now();
+  function step() {
+    const p = Math.min(1, (Date.now() - t0) / dur);
+    el.textContent = Math.round(start + diff * p);
+    if (p < 1) requestAnimationFrame(step);
   }
-  currentTotal=target;requestAnimationFrame(step);
+  animTotal = target;
+  requestAnimationFrame(step);
 }
 
-function drawRadar(vals){
-  const svg=document.getElementById('radarChart');
+function drawRadar(vals) {
+  const svg = document.getElementById('radarSVG');
+  svg.innerHTML = '';
   const W=260,H=260,cx=W/2,cy=H/2,R=90,n=5;
-  const labels=['향','맛','피니쉬','바디','밸런스'];
-  svg.innerHTML='';
-  function pt(i,r,offset){const a=(i/n)*Math.PI*2-Math.PI/2;return[cx+(r+offset)*Math.cos(a),cy+(r+offset)*Math.sin(a)];}
-  // grid
-  for(let r=1;r<=5;r++){
+  const labels = ['향','맛','피니쉬','바디','밸런스'];
+
+  function pt(i, r) {
+    const a = (i/n)*Math.PI*2 - Math.PI/2;
+    return [cx + r*Math.cos(a), cy + r*Math.sin(a)];
+  }
+  const mkEl = tag => document.createElementNS('http://www.w3.org/2000/svg', tag);
+
+  // Grid rings
+  for (let r=1; r<=5; r++) {
     let d='';
-    for(let i=0;i<n;i++){const[x,y]=pt(i,R*(r/5),0);d+=(i===0?'M':'L')+x.toFixed(1)+' '+y.toFixed(1);}
-    d+='Z';
-    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
-    path.setAttribute('d',d);path.setAttribute('fill','none');path.setAttribute('stroke','rgba(0,0,0,0.1)');path.setAttribute('stroke-width','0.5');
-    svg.appendChild(path);
+    for (let i=0;i<n;i++) { const [x,y]=pt(i,R*(r/5)); d+=(i===0?'M':'L')+x.toFixed(1)+' '+y.toFixed(1); }
+    const p=mkEl('path'); p.setAttribute('d',d+'Z'); p.setAttribute('fill','none'); p.setAttribute('stroke','rgba(0,0,0,0.08)'); p.setAttribute('stroke-width','0.5');
+    svg.appendChild(p);
   }
-  // axes
-  for(let i=0;i<n;i++){
-    const[x,y]=pt(i,R,0);
-    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
-    line.setAttribute('x1',cx);line.setAttribute('y1',cy);line.setAttribute('x2',x.toFixed(1));line.setAttribute('y2',y.toFixed(1));
-    line.setAttribute('stroke','rgba(0,0,0,0.1)');line.setAttribute('stroke-width','0.5');
-    svg.appendChild(line);
+  // Axes
+  for (let i=0;i<n;i++) {
+    const [x,y]=pt(i,R);
+    const l=mkEl('line'); l.setAttribute('x1',cx); l.setAttribute('y1',cy); l.setAttribute('x2',x.toFixed(1)); l.setAttribute('y2',y.toFixed(1)); l.setAttribute('stroke','rgba(0,0,0,0.08)'); l.setAttribute('stroke-width','0.5');
+    svg.appendChild(l);
   }
-  // data
+  // Data
   let d='';
-  for(let i=0;i<n;i++){const v=Math.max(0.05,Math.min(1,vals[i]||0));const[x,y]=pt(i,R*v,0);d+=(i===0?'M':'L')+x.toFixed(1)+' '+y.toFixed(1);}
-  d+='Z';
-  const fill=document.createElementNS('http://www.w3.org/2000/svg','path');
-  fill.setAttribute('d',d);fill.setAttribute('fill','rgba(196,125,43,0.2)');fill.setAttribute('stroke','#C47D2B');fill.setAttribute('stroke-width','2');
-  svg.appendChild(fill);
-  // labels (SVG text - 절대 깨지지 않음)
-  for(let i=0;i<n;i++){
-    const[x,y]=pt(i,R,20);
-    const text=document.createElementNS('http://www.w3.org/2000/svg','text');
-    text.setAttribute('x',x.toFixed(1));text.setAttribute('y',y.toFixed(1));
-    text.setAttribute('text-anchor','middle');text.setAttribute('dominant-baseline','central');
-    text.setAttribute('font-size','12');text.setAttribute('fill','#6B6560');
-    text.setAttribute('font-family','-apple-system, Apple SD Gothic Neo, sans-serif');
-    text.textContent=labels[i];
-    svg.appendChild(text);
+  for (let i=0;i<n;i++) { const v=Math.max(0.05,Math.min(1,vals[i]||0)); const [x,y]=pt(i,R*v); d+=(i===0?'M':'L')+x.toFixed(1)+' '+y.toFixed(1); }
+  const poly=mkEl('path'); poly.setAttribute('d',d+'Z'); poly.setAttribute('fill','rgba(196,125,43,0.2)'); poly.setAttribute('stroke','#C47D2B'); poly.setAttribute('stroke-width','2');
+  svg.appendChild(poly);
+  // Labels
+  for (let i=0;i<n;i++) {
+    const [x,y]=pt(i,R+20);
+    const txt=mkEl('text'); txt.setAttribute('x',x.toFixed(1)); txt.setAttribute('y',y.toFixed(1)); txt.setAttribute('text-anchor','middle'); txt.setAttribute('dominant-baseline','central'); txt.setAttribute('font-size','12'); txt.setAttribute('fill','#6B6560'); txt.setAttribute('font-family','-apple-system,Apple SD Gothic Neo,sans-serif');
+    txt.textContent=labels[i]; svg.appendChild(txt);
   }
 }
 
-async function saveNote(){
-  const btn=document.getElementById('saveBtn');
-  const editId=btn.dataset.editId||null;
-  const name=document.getElementById('whisky_name').value.trim();
-  if(!name){showToast('위스키 이름을 입력해주세요!');return;}
-  btn.disabled=true;btn.textContent=editId?'수정 중...':'저장 중...';
-  const n=+document.getElementById('nose_score').value,pa=+document.getElementById('palate_score').value,fi=+document.getElementById('finish_score').value,bo=+document.getElementById('body_texture_score').value,ba=+document.getElementById('balance_score').value;
-  const data={
-    whisky_name:name,age:document.getElementById('age').value,abv:document.getElementById('abv').value,
-    region:document.getElementById('region').value,distillery:document.getElementById('distillery').value,
-    tasting_date:document.getElementById('tasting_date').value||null,
-    manufacture_date:document.getElementById('manufacture_date').value,
-    price:document.getElementById('price').value,
-    classification:getTags('class').join(''),cask_type:getTags('cask'),
-    color:selectedColor,color_note:document.getElementById('color_note').value,
-    nose:getTags('nose'),palate:getTags('palate'),finish:getTags('finish'),body_texture:getTags('body'),
-    tasting_memo:'',
-    nose_score:n,palate_score:pa,finish_score:fi,body_texture_score:bo,balance_score:ba,
+/* ── Save / Update ── */
+async function saveNote() {
+  const btn = document.getElementById('saveBtn');
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { showToast('위스키 이름을 입력해주세요!'); return; }
+  btn.disabled = true;
+  btn.textContent = editingId ? '수정 중...' : '저장 중...';
 
-    total_score:n+pa+fi+bo+ba,
-    one_line:document.getElementById('one_line').value,pairing:document.getElementById('pairing').value,
-    repurchase:document.getElementById('repurchase').value,extra_memo:document.getElementById('extra_memo').value,
-    image_url:imgBase64,
-    search_tags:[...getTags('nose'),...getTags('palate'),...getTags('finish'),...getTags('body')],
+  const s = getScores();
+  // Supabase 컬럼과 100% 일치하는 필드만 전송
+  const data = {
+    whisky_name:        name,
+    age:                document.getElementById('f-age').value,
+    abv:                document.getElementById('f-abv').value,
+    region:             document.getElementById('f-region').value,
+    distillery:         document.getElementById('f-distillery').value,
+    tasting_date:       document.getElementById('f-tasting-date').value || null,
+    manufacture_date:   document.getElementById('f-mfg-date').value,
+    price:              document.getElementById('f-price').value,
+    classification:     getTags('class').join(''),
+    cask_type:          getTags('cask'),
+    color:              selectedColor,
+    color_note:         document.getElementById('f-color-note').value,
+    nose:               getTags('nose'),
+    palate:             getTags('palate'),
+    finish:             getTags('finish'),
+    body_texture:       getTags('body'),
+    tasting_memo:       '',
+    nose_score:         s.nose,
+    palate_score:       s.palate,
+    finish_score:       s.finish,
+    body_texture_score: s.body,
+    balance_score:      s.balance,
+    total_score:        s.nose + s.palate + s.finish + s.body + s.balance,
+    one_line:           document.getElementById('f-one-line').value,
+    pairing:            document.getElementById('f-pairing').value,
+    repurchase:         document.getElementById('f-repurchase').value,
+    extra_memo:         document.getElementById('f-memo').value,
+    image_url:          imgBase64,
+    search_tags:        [...getTags('nose'), ...getTags('palate'), ...getTags('finish'), ...getTags('body')],
   };
-  let saved,error;
-  if(editId){
-    ({data:saved,error}=await sb.from('whisky_notes').update(data).eq('id',editId).select());
+
+  let result, error;
+  if (editingId) {
+    ({ data: result, error } = await SB.from('whisky_notes').update(data).eq('id', editingId).select());
   } else {
-    ({data:saved,error}=await sb.from('whisky_notes').insert([data]).select());
+    ({ data: result, error } = await SB.from('whisky_notes').insert([data]).select());
   }
-  btn.disabled=false;btn.textContent='저장하기';
-  if(error){showToast('저장 실패: '+error.message);return;}
-  lastSaved=saved?saved[0]:data;
-  btn.dataset.editId='';btn.textContent='저장하기';
-  showToast(editId?'✓ 수정됐어요!':'✓ 저장됐어요!');
-  setTimeout(()=>openShareModal(),800);
+
+  btn.disabled = false;
+  btn.textContent = '저장하기';
+
+  if (error) { showToast('저장 실패: ' + error.message); return; }
+
+  lastSaved = (result && result[0]) ? result[0] : data;
+  const wasEditing = !!editingId;
+  editingId = null;
+
+  showToast(wasEditing ? '✓ 수정됐어요!' : '✓ 저장됐어요!');
   resetForm();
+  if (!wasEditing) setTimeout(() => openShareModal(), 800);
 }
 
-function resetForm(){
-  document.querySelectorAll('#page-form input[type=text],#page-form input[type=date],#page-form textarea').forEach(el=>el.value='');
-  document.querySelectorAll('#page-form select').forEach(el=>el.selectedIndex=0);
-  document.querySelectorAll('.tag').forEach(t=>t.classList.remove('on-brown','on-blue','on-amber'));
-  document.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('active'));
-  document.querySelectorAll('input[type=range]').forEach(r=>{r.value=r.max==='20'?16:7;});
-  selectedColor='';imgBase64=null;removeImg();updateScore();
-  document.getElementById('tasting_date').value=new Date().toISOString().split('T')[0];
+function resetForm() {
+  document.querySelectorAll('#page-form input[type=text], #page-form input[type=date], #page-form textarea').forEach(el => el.value = '');
+  document.querySelectorAll('#page-form select').forEach(el => el.selectedIndex = 0);
+  document.querySelectorAll('.tag').forEach(t => t.classList.remove('sel-brown','sel-blue','sel-amber'));
+  document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+  document.querySelectorAll('#page-form input[type=range]').forEach(r => { r.value = 16; });
+  selectedColor = ''; imgBase64 = null; editingId = null;
+  removeImg(); updateScore();
+  document.getElementById('saveBtn').textContent = '저장하기';
+  document.getElementById('f-tasting-date').value = new Date().toISOString().split('T')[0];
 }
 
-async function loadNotes(){
-  const{data,error}=await sb.from('whisky_notes').select('*').order('created_at',{ascending:false});
-  allNotes=data||[];renderNotes(allNotes);
+/* ── Load Notes ── */
+async function loadNotes() {
+  const { data, error } = await SB.from('whisky_notes').select('*').order('created_at', { ascending: false });
+  if (error) { showToast('불러오기 실패: ' + error.message); return; }
+  allNotes = data || [];
+  renderNotes(allNotes);
 }
 
-function renderNotes(notes){
-  const list=document.getElementById('notes-list'),count=document.getElementById('list-count');
-  if(!notes||notes.length===0){
-    count.textContent='0개';
-    list.innerHTML=`<div class="empty-state"><div style="font-size:48px">🥃</div><p>아직 기록이 없어요.<br>첫 테이스팅 노트를 작성해보세요!</p></div>`;
+function renderNotes(notes) {
+  const list = document.getElementById('notes-list');
+  const count = document.getElementById('list-count');
+  if (!notes || notes.length === 0) {
+    count.textContent = '0개';
+    list.innerHTML = `<div class="empty-state"><div style="font-size:48px">🥃</div><p>아직 기록이 없어요.<br>첫 테이스팅 노트를 작성해보세요!</p></div>`;
     return;
   }
-  count.textContent=notes.length+'개';
-  list.innerHTML=notes.map(n=>`
-    <div class="note-card" style="position:relative">
-      <div class="note-img" onclick='openDetail(${JSON.stringify(n).replace(/'/g,"&#39;")})'>
-        ${n.image_url?`<img src="${n.image_url}">`:'🥃'}
+  count.textContent = notes.length + '개';
+  list.innerHTML = notes.map(n => `
+    <div class="note-card">
+      <div class="note-img" onclick="openDetail('${n.id}')">
+        ${n.image_url ? `<img src="${n.image_url}">` : '🥃'}
       </div>
-      <button class="note-menu-btn" onclick="toggleMenu(event,'menu-${n.id}')" style="position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,0.45);color:#fff;border:none;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;z-index:10">···</button>
-      <div id="menu-${n.id}" style="display:none;position:absolute;top:40px;right:8px;background:var(--card);border:.5px solid var(--border-md);border-radius:var(--radius-sm);overflow:hidden;z-index:20;min-width:100px;box-shadow:0 4px 16px rgba(0,0,0,0.12)">
-        <button onclick="editNote('${n.id}')" style="width:100%;padding:10px 14px;border:none;background:transparent;color:var(--text);font-size:13px;text-align:left;cursor:pointer;display:block">수정</button>
-        <button onclick="deleteNote('${n.id}')" style="width:100%;padding:10px 14px;border:none;background:transparent;color:#e00;font-size:13px;text-align:left;cursor:pointer;display:block;border-top:.5px solid var(--border)">삭제</button>
+      <!-- ··· 버튼: 카드 이미지 우측 상단 -->
+      <button class="card-menu-btn" onclick="toggleMenu(event,'menu-${n.id}')">···</button>
+      <div id="menu-${n.id}" class="card-menu-dropdown">
+        <button onclick="editNote('${n.id}');closeMenus()">수정</button>
+        <div class="menu-sep"></div>
+        <button class="del" onclick="deleteNote('${n.id}')">삭제</button>
       </div>
-      <div class="note-body" onclick='openDetail(${JSON.stringify(n).replace(/'/g,"&#39;")})'>
-        <div class="note-name">${n.whisky_name||'-'}</div>
-        <div class="note-meta-s">${n.age||'NAS'}${n.region?' · '+n.region:''}</div>
-        <div class="note-score-b">${n.total_score||0}<span> / 100</span></div>
+      <div class="note-body" onclick="openDetail('${n.id}')">
+        <div class="note-name">${n.whisky_name || '-'}</div>
+        <div class="note-meta-s">${n.age || 'NAS'}${n.region ? ' · ' + n.region : ''}</div>
+        <div class="note-score-b">${n.total_score || 0}<span> / 100</span></div>
       </div>
     </div>`).join('');
 }
 
-function filterNotes(){
-  const q=document.getElementById('searchInput').value.toLowerCase().trim();
-  if(!q){renderNotes(allNotes);return;}
-  renderNotes(allNotes.filter(n=>{
-    const tags=[...(n.nose||[]),...(n.palate||[]),...(n.finish||[]),...(n.body_texture||[])];
-    return(n.whisky_name||'').toLowerCase().includes(q)||tags.some(t=>t.toLowerCase().includes(q))||(n.region||'').toLowerCase().includes(q)||(n.distillery||'').toLowerCase().includes(q)||(n.classification||'').toLowerCase().includes(q);
+/* ── Menu ── */
+function toggleMenu(e, menuId) {
+  e.stopPropagation();
+  const m = document.getElementById(menuId);
+  const isOpen = m.classList.contains('open');
+  closeMenus();
+  if (!isOpen) m.classList.add('open');
+}
+function closeMenus() {
+  document.querySelectorAll('.card-menu-dropdown').forEach(m => m.classList.remove('open'));
+}
+document.addEventListener('click', closeMenus);
+
+/* ── Search ── */
+function filterNotes() {
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  if (!q) { renderNotes(allNotes); return; }
+  renderNotes(allNotes.filter(n => {
+    const tags = [...(n.nose||[]),...(n.palate||[]),...(n.finish||[]),...(n.body_texture||[])];
+    return (n.whisky_name||'').toLowerCase().includes(q)
+      || tags.some(t => t.toLowerCase().includes(q))
+      || (n.region||'').toLowerCase().includes(q)
+      || (n.distillery||'').toLowerCase().includes(q)
+      || (n.classification||'').toLowerCase().includes(q);
   }));
 }
 
-async function deleteNote(id){
-  if(!confirm('삭제할까요?'))return;
-  const{error}=await sb.from('whisky_notes').delete().eq('id',id);
-  if(error){showToast('삭제 실패');return;}
-  showToast('삭제됐어요');loadNotes();
+/* ── Delete (실제 작동) ── */
+async function deleteNote(id) {
+  closeMenus();
+  if (!confirm('이 기록을 삭제할까요?')) return;
+  const { error } = await SB.from('whisky_notes').delete().eq('id', id);
+  if (error) { showToast('삭제 실패: ' + error.message); return; }
+  allNotes = allNotes.filter(n => n.id !== id);
+  showToast('삭제됐어요');
+  renderNotes(allNotes);
+  document.getElementById('list-count').textContent = allNotes.length + '개';
 }
 
-function toggleMenu(e,menuId){
-  e.stopPropagation();
-  document.querySelectorAll('[id^="menu-"]').forEach(m=>{if(m.id!==menuId)m.style.display='none';});
-  const m=document.getElementById(menuId);
-  m.style.display=m.style.display==='block'?'none':'block';
-}
-document.addEventListener('click',()=>document.querySelectorAll('[id^="menu-"]').forEach(m=>m.style.display='none'));
+/* ── Edit (실제 작동) ── */
+function editNote(id) {
+  const n = allNotes.find(x => x.id === id);
+  if (!n) { showToast('데이터를 찾을 수 없어요'); return; }
+  editingId = id;
 
-function editNote(id){
-  const n=allNotes.find(x=>x.id===id);
-  if(!n){showToast('데이터를 찾을 수 없어요');return;}
-  document.querySelectorAll('[id^="menu-"]').forEach(m=>m.style.display='none');
-  // 폼에 기존 데이터 채우기
-  document.getElementById('whisky_name').value=n.whisky_name||'';
-  document.getElementById('age').value=n.age||'';
-  document.getElementById('abv').value=n.abv||'';
-  document.getElementById('region').value=n.region||'';
-  document.getElementById('distillery').value=n.distillery||'';
-  document.getElementById('tasting_date').value=n.tasting_date||'';
-  document.getElementById('manufacture_date').value=n.manufacture_date||'';
-  document.getElementById('price').value=n.price||'';
-  document.getElementById('color_note').value=n.color_note||'';
-  document.getElementById('one_line').value=n.one_line||'';
-  document.getElementById('pairing').value=n.pairing||'';
-  document.getElementById('repurchase').value=n.repurchase||'★★★★★ 반드시';
-  document.getElementById('extra_memo').value=n.extra_memo||'';
-  // 이미지
-  if(n.image_url){
-    imgBase64=n.image_url;
-    document.getElementById('imgSlot').innerHTML=`<div style="position:relative;aspect-ratio:1/1"><img src="${n.image_url}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius);display:block"><button onclick="removeImg()" style="position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;border:none;cursor:pointer;font-size:14px">✕</button></div>`;
-  }
-  // 태그 복원
-  document.querySelectorAll('.tag').forEach(t=>t.classList.remove('on-brown','on-blue','on-amber'));
-  const tagMap={class:n.classification?[n.classification]:[],cask:n.cask_type||[],nose:n.nose||[],palate:n.palate||[],finish:n.finish||[],body:n.body_texture||[]};
-  Object.entries(tagMap).forEach(([g,vals])=>{
-    const cls=g==='cask'||g==='class'?'on-blue':g==='body'?'on-amber':'on-brown';
-    document.querySelectorAll(`.tag[data-g="${g}"]`).forEach(t=>{if(vals.includes(t.textContent))t.classList.add(cls);});
+  document.getElementById('f-name').value         = n.whisky_name || '';
+  document.getElementById('f-age').value           = n.age || '';
+  document.getElementById('f-abv').value           = n.abv || '';
+  document.getElementById('f-region').value        = n.region || '';
+  document.getElementById('f-distillery').value    = n.distillery || '';
+  document.getElementById('f-tasting-date').value  = n.tasting_date || '';
+  document.getElementById('f-mfg-date').value      = n.manufacture_date || '';
+  document.getElementById('f-price').value         = n.price || '';
+  document.getElementById('f-color-note').value    = n.color_note || '';
+  document.getElementById('f-one-line').value      = n.one_line || '';
+  document.getElementById('f-pairing').value       = n.pairing || '';
+  document.getElementById('f-memo').value          = n.extra_memo || '';
+  if (n.repurchase) document.getElementById('f-repurchase').value = n.repurchase;
+
+  selectedColor = n.color || '';
+  document.querySelectorAll('.color-dot').forEach(d => d.classList.toggle('active', d.dataset.c === selectedColor));
+
+  document.querySelectorAll('.tag').forEach(t => t.classList.remove('sel-brown','sel-blue','sel-amber'));
+  const tagMap = {
+    class:  n.classification ? [n.classification] : [],
+    cask:   n.cask_type || [],
+    nose:   n.nose || [],
+    palate: n.palate || [],
+    finish: n.finish || [],
+    body:   n.body_texture || [],
+  };
+  Object.entries(tagMap).forEach(([g, vals]) => {
+    const cls = (g==='cask'||g==='class') ? 'sel-blue' : (g==='body') ? 'sel-amber' : 'sel-brown';
+    document.querySelectorAll(`.tag[data-g="${g}"]`).forEach(t => { if (vals.includes(t.textContent)) t.classList.add(cls); });
   });
-  // 점수 복원
-  ['nose','palate','finish','body_texture','balance'].forEach(k=>{
-    const el=document.getElementById(k+'_score');
-    const vEl=document.getElementById('v-'+k.replace('_texture','').replace('body_texture','body'));
-    if(el&&n[k+'_score']){el.value=n[k+'_score'];if(vEl)vEl.textContent=n[k+'_score'];}
-  });
+
+  const scoreIds = { 's-nose': n.nose_score, 's-palate': n.palate_score, 's-finish': n.finish_score, 's-body': n.body_texture_score, 's-balance': n.balance_score };
+  Object.entries(scoreIds).forEach(([elId, val]) => { if (val != null) document.getElementById(elId).value = val; });
   updateScore();
-  // 수정 모드 저장 버튼
-  const btn=document.getElementById('saveBtn');
-  btn.textContent='수정 저장하기';
-  btn.dataset.editId=id;
-  // 페이지 이동 + 스크롤
-  showPage('form',document.querySelector('.nav-tab'));
-  setTimeout(()=>window.scrollTo({top:0,behavior:'smooth'}),100);
+
+  if (n.image_url) {
+    imgBase64 = n.image_url;
+    document.getElementById('imgSlot').innerHTML = `
+      <div style="position:relative;aspect-ratio:1/1">
+        <img src="${n.image_url}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius);display:block">
+        <button class="img-remove" onclick="removeImg()">✕</button>
+      </div>`;
+  } else { removeImg(); }
+
+  document.getElementById('saveBtn').textContent = '수정 저장하기';
+  showPage('form', document.querySelector('.nav-tab'));
+  setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
   showToast('수정 내용을 입력하고 저장해주세요');
 }
 
-function openDetail(n){
-  if(typeof n==='string')n=JSON.parse(n);
-  const tp=arr=>(arr&&arr.length?arr.map(t=>`<span class="pill">${t}</span>`).join(''):'—');
-  document.getElementById('detail-content').innerHTML=`
-    ${n.image_url?`<img src="${n.image_url}" style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:var(--radius);margin-bottom:1rem">`:''}
+/* ── Detail ── */
+function openDetail(id) {
+  const n = allNotes.find(x => x.id === id);
+  if (!n) return;
+  const pills = arr => arr && arr.length ? arr.map(t => `<span class="pill">${t}</span>`).join('') : '—';
+  const row = (l, v) => v ? `<div class="detail-row"><span class="detail-label">${l}</span><span class="detail-val">${v}</span></div>` : '';
+  const sbox = (l, s, m) => `<div class="score-box"><div class="score-box-num">${s||0}</div><div class="score-box-label">${l}/${m}</div></div>`;
+
+  document.getElementById('detail-content').innerHTML = `
+    ${n.image_url ? `<img src="${n.image_url}" style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:var(--radius);margin-bottom:1rem">` : ''}
     <div style="font-size:20px;font-weight:700;margin-bottom:.25rem">${n.whisky_name||'-'}</div>
     <div style="font-size:13px;color:var(--text-sub);margin-bottom:1rem">${[n.distillery,n.region,n.age,n.abv].filter(Boolean).join(' · ')}</div>
     <div class="divider"></div>
     ${row('분류',n.classification)}${row('캐스크',n.cask_type?.join(', '))}${row('컬러',n.color_note||n.color)}${row('날짜',n.tasting_date)}${row('제조',n.manufacture_date)}${row('가격',n.price)}
     <div class="divider"></div>
-    <div style="margin-bottom:6px"><div class="sub-label" style="margin-bottom:4px">향 (Nose)</div>${tp(n.nose)}</div>
-    <div style="margin-bottom:6px"><div class="sub-label" style="margin-bottom:4px">맛 (Palate)</div>${tp(n.palate)}</div>
-    <div style="margin-bottom:6px"><div class="sub-label" style="margin-bottom:4px">피니쉬</div>${tp(n.finish)}</div>
-    <div style="margin-bottom:10px"><div class="sub-label" style="margin-bottom:4px">바디 & 질감</div>${tp(n.body_texture)}</div>
+    <div style="margin-bottom:6px"><div class="sub-label" style="margin-bottom:4px">향</div>${pills(n.nose)}</div>
+    <div style="margin-bottom:6px"><div class="sub-label" style="margin-bottom:4px">맛</div>${pills(n.palate)}</div>
+    <div style="margin-bottom:6px"><div class="sub-label" style="margin-bottom:4px">피니쉬</div>${pills(n.finish)}</div>
+    <div style="margin-bottom:10px"><div class="sub-label" style="margin-bottom:4px">바디 & 질감</div>${pills(n.body_texture)}</div>
     <div class="divider"></div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center;margin-bottom:1rem">
-      ${sb2('향',n.nose_score,20)}${sb2('맛',n.palate_score,20)}${sb2('피니쉬',n.finish_score,20)}${sb2('바디',n.body_texture_score,20)}
-      ${sb2('밸런스',n.balance_score,20)}
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:1rem">
+      ${sbox('향',n.nose_score,20)}${sbox('맛',n.palate_score,20)}${sbox('피니쉬',n.finish_score,20)}${sbox('바디',n.body_texture_score,20)}${sbox('밸런스',n.balance_score,20)}
     </div>
-    <div style="text-align:center;margin-bottom:1rem"><span style="font-size:40px;font-weight:700;color:var(--amber-dark)">${n.total_score||0}</span><span style="font-size:14px;color:var(--text-hint)"> / 100</span></div>
-    ${n.one_line?`<div style="font-size:14px;font-weight:500;margin-bottom:.5rem">"${n.one_line}"</div>`:''}
+    <div style="text-align:center;margin-bottom:1rem">
+      <span style="font-size:40px;font-weight:700;color:var(--amber-dark)">${n.total_score||0}</span>
+      <span style="font-size:14px;color:var(--text-hint)"> / 100</span>
+    </div>
+    ${n.one_line ? `<div style="font-size:14px;font-weight:500;margin-bottom:.5rem">"${n.one_line}"</div>` : ''}
     ${row('페어링',n.pairing)}${row('재구매',n.repurchase)}
-    ${n.extra_memo?`<div style="font-size:12px;color:var(--text-sub);margin-top:.5rem">${n.extra_memo}</div>`:''}`;
+    ${n.extra_memo ? `<div style="font-size:12px;color:var(--text-sub);margin-top:.5rem">${n.extra_memo}</div>` : ''}`;
+
   document.getElementById('detailModal').classList.add('open');
 }
 
-function row(l,v){return v?`<div class="detail-row"><span class="detail-label">${l}</span><span class="detail-val">${v}</span></div>`:''}
-function sb2(l,s,m){return`<div style="background:var(--bg);border-radius:var(--radius-sm);padding:8px 4px"><div style="font-size:18px;font-weight:700;color:var(--amber-dark)">${s||0}</div><div style="font-size:10px;color:var(--text-hint)">${l}/${m}</div></div>`}
-
-function closeModal(id,e){
-  if(!e||e.target===document.getElementById(id)||e.currentTarget?.tagName==='BUTTON')
+function closeMod(id, e) {
+  if (!e || e.target === document.getElementById(id) || e.currentTarget?.tagName === 'BUTTON') {
     document.getElementById(id).classList.remove('open');
+  }
 }
 
-function openShareModal(){
-  const n=lastSaved;if(!n)return;
-  document.getElementById('share-preview').innerHTML=`
+/* ── Share ── */
+function openShareModal() {
+  const n = lastSaved; if (!n) return;
+  document.getElementById('share-preview').innerHTML = `
     <div style="font-weight:600;font-size:15px">${n.whisky_name||'-'}</div>
     <div style="font-size:12px;color:var(--text-sub);margin:.25rem 0">${[n.region,n.age,n.abv].filter(Boolean).join(' · ')}</div>
     <div style="font-size:20px;font-weight:700;color:var(--amber-dark)">${n.total_score||0} <span style="font-size:11px;color:var(--text-hint)">/ 100</span></div>
-    ${n.one_line?`<div style="font-size:12px;color:var(--text-sub);margin-top:.25rem">"${n.one_line}"</div>`:''}`;
+    ${n.one_line ? `<div style="font-size:12px;color:var(--text-sub);margin-top:.25rem">"${n.one_line}"</div>` : ''}`;
   document.getElementById('shareModal').classList.add('open');
 }
 
-function saveToPhotos(){
-  if(!lastSaved){showToast('저장된 노트가 없어요');return;}
-  const cv=document.createElement('canvas');cv.width=800;cv.height=800;
-  const ctx=cv.getContext('2d');
-  ctx.fillStyle='#F7F4EF';ctx.fillRect(0,0,800,800);
-  ctx.fillStyle='#1C1A17';ctx.font='bold 32px -apple-system,sans-serif';ctx.textAlign='center';
-  ctx.fillText(lastSaved.whisky_name||'-',400,120);
-  ctx.font='18px -apple-system,sans-serif';ctx.fillStyle='#6B6560';
-  ctx.fillText([lastSaved.region,lastSaved.age,lastSaved.abv].filter(Boolean).join(' · '),400,160);
-  ctx.font='bold 90px -apple-system,sans-serif';ctx.fillStyle='#8B5210';
-  ctx.fillText(lastSaved.total_score||0,400,290);
-  ctx.font='20px -apple-system,sans-serif';ctx.fillStyle='#A09990';ctx.fillText('/ 100',400,330);
-  if(lastSaved.one_line){ctx.font='16px -apple-system,sans-serif';ctx.fillStyle='#6B6560';ctx.fillText(`"${lastSaved.one_line}"`,400,380);}
-  ctx.font='13px -apple-system,sans-serif';ctx.fillStyle='#A09990';ctx.fillText('🥃 위스키 테이스팅 노트',400,750);
-  const a=document.createElement('a');a.download=`${lastSaved.whisky_name||'whisky'}-tasting.png`;a.href=cv.toDataURL();a.click();
-  showToast('이미지가 저장됐어요!');closeModal('shareModal');
+function saveToImage() {
+  const n = lastSaved; if (!n) { showToast('저장된 노트가 없어요'); return; }
+  const cv = document.createElement('canvas'); cv.width = 800; cv.height = 800;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle='#F7F4EF'; ctx.fillRect(0,0,800,800);
+  ctx.fillStyle='#1C1A17'; ctx.font='bold 32px -apple-system,sans-serif'; ctx.textAlign='center';
+  ctx.fillText(n.whisky_name||'-',400,120);
+  ctx.font='18px -apple-system,sans-serif'; ctx.fillStyle='#6B6560';
+  ctx.fillText([n.region,n.age,n.abv].filter(Boolean).join(' · '),400,160);
+  ctx.font='bold 90px -apple-system,sans-serif'; ctx.fillStyle='#8B5210';
+  ctx.fillText(n.total_score||0,400,290);
+  ctx.font='20px -apple-system,sans-serif'; ctx.fillStyle='#A09990'; ctx.fillText('/ 100',400,330);
+  if (n.one_line) { ctx.font='16px -apple-system,sans-serif'; ctx.fillStyle='#6B6560'; ctx.fillText(`"${n.one_line}"`,400,380); }
+  ctx.font='13px -apple-system,sans-serif'; ctx.fillStyle='#A09990'; ctx.fillText('🥃 위스키 테이스팅 노트',400,750);
+  const a=document.createElement('a'); a.download=`${n.whisky_name||'whisky'}-tasting.png`; a.href=cv.toDataURL(); a.click();
+  showToast('이미지가 저장됐어요!'); closeMod('shareModal');
 }
 
-function shareToSNS(p){
-  const n=lastSaved;if(!n)return;
-  const text=`🥃 ${n.whisky_name} | ${[n.region,n.age,n.abv].filter(Boolean).join(' ')} | 총점 ${n.total_score}/100${n.one_line?' | "'+n.one_line+'"':''}  #위스키 #테이스팅노트`;
-  if(p==='twitter')window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(text));
-  else{navigator.clipboard.writeText(text).then(()=>showToast('복사됐어요! 인스타그램에 붙여넣으세요'));}
+function shareIG() {
+  const n=lastSaved; if(!n) return;
+  const text=`🥃 ${n.whisky_name} | ${[n.region,n.age,n.abv].filter(Boolean).join(' ')} | 총점 ${n.total_score}/100${n.one_line?' | "'+n.one_line+'"':''} #위스키 #테이스팅노트`;
+  navigator.clipboard.writeText(text).then(()=>showToast('복사됐어요! 인스타그램에 붙여넣으세요'));
 }
 
-function copyLink(){
-  navigator.clipboard.writeText(window.location.href).then(()=>{showToast('링크가 복사됐어요!');closeModal('shareModal');});
+function shareTwitter() {
+  const n=lastSaved; if(!n) return;
+  window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(`🥃 ${n.whisky_name} | 총점 ${n.total_score}/100 #위스키 #테이스팅노트`));
 }
 
-function showToast(msg){
-  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+function copyLink() {
+  navigator.clipboard.writeText(window.location.href).then(()=>{ showToast('링크가 복사됐어요!'); closeMod('shareModal'); });
+}
+
+/* ── Toast ── */
+function showToast(msg) {
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),2500);
 }
 
-document.getElementById('tasting_date').value=new Date().toISOString().split('T')[0];
+/* ── Init ── */
+document.getElementById('f-tasting-date').value = new Date().toISOString().split('T')[0];
 updateScore();
 </script>
 </body>
