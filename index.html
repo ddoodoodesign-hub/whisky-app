@@ -247,37 +247,37 @@
   <div class="section">
     <div class="section-label">기본 정보</div>
     <div class="card">
-      <div class="info-row">
-        <div class="img-slot">
-          <div class="img-area" id="imgSlot">
-            <input type="file" accept="image/*" onchange="loadImg(this)">
-            <span style="font-size:22px;pointer-events:none">📷</span>
-            <div class="img-area-label">사진<br>추가</div>
+      <!-- 이미지 상단 4:3 -->
+      <div id="imgSlot" style="width:100%;aspect-ratio:1/1;margin-bottom:14px;border-radius:var(--radius);overflow:hidden">
+        <div class="img-area" style="width:100%;height:100%">
+          <input type="file" accept="image/*" onchange="loadImg(this)">
+          <span style="font-size:28px;pointer-events:none">📷</span>
+          <div class="img-area-label">사진 추가<br><span style="font-size:10px;color:var(--text-hint)">1 : 1 비율 권장</span></div>
+        </div>
+      </div>
+      <!-- 기본 정보 필드 -->
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="field">
+          <label>위스키 이름</label>
+          <input type="text" id="whisky_name" placeholder="예) Ardbeg">
+        </div>
+        <div class="grid3">
+          <div class="field"><label>숙성 연도</label><input type="text" id="age" placeholder="10Y / NAS"></div>
+          <div class="field"><label>도수 (ABV)</label><input type="text" id="abv" placeholder="46%"></div>
+          <div class="field"><label>지역</label>
+            <select id="region">
+              <option value="">선택</option>
+              <option>Islay</option><option>Highland</option><option>Speyside</option>
+              <option>Lowland</option><option>Campbeltown</option><option>Island</option>
+              <option>Ireland</option><option>Japan</option><option>USA</option>
+              <option>Canada</option><option>기타</option>
+            </select>
           </div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:10px" id="fieldCol">
-          <div class="field">
-            <label>위스키 이름</label>
-            <input type="text" id="whisky_name" placeholder="예) Ardbeg 10">
-          </div>
-          <div class="grid3">
-            <div class="field"><label>숙성 연도</label><input type="text" id="age" placeholder="10Y / NAS"></div>
-            <div class="field"><label>도수 (ABV)</label><input type="text" id="abv" placeholder="46%"></div>
-            <div class="field"><label>지역</label>
-              <select id="region">
-                <option value="">선택</option>
-                <option>Islay</option><option>Highland</option><option>Speyside</option>
-                <option>Lowland</option><option>Campbeltown</option><option>Island</option>
-                <option>Ireland</option><option>Japan</option><option>USA</option>
-                <option>Canada</option><option>기타</option>
-              </select>
-            </div>
-          </div>
-          <div class="grid3">
-            <div class="field"><label>증류소</label><input type="text" id="distillery" placeholder="예) Ardbeg"></div>
-            <div class="field"><label>테이스팅 날짜</label><input type="date" id="tasting_date"></div>
-            <div class="field"><label>가격 / 구입처</label><input type="text" id="price" placeholder="85,000원"></div>
-          </div>
+        <div class="grid3">
+          <div class="field"><label>증류소</label><input type="text" id="distillery" placeholder="예) Ardbeg"></div>
+          <div class="field"><label>테이스팅 날짜</label><input type="date" id="tasting_date"></div>
+          <div class="field"><label>가격 / 구입처</label><input type="text" id="price" placeholder="85,000원"></div>
         </div>
       </div>
       <div class="divider"></div>
@@ -324,9 +324,9 @@
   <div class="section">
     <div class="section-label">노즈 · 팔레트 · 피니쉬</div>
     <div class="card">
-      <div class="np-grid" style="margin-bottom:12px">
+      <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:12px">
         <div>
-          <div class="sub-label">👃 노즈 (Nose)</div>
+          <div class="sub-label">노즈 (Nose)</div>
           <div class="tags-wrap">
             <span class="tag" data-g="nose">피트/스모키</span>
             <span class="tag" data-g="nose">바닐라</span>
@@ -342,8 +342,11 @@
             <span class="tag" data-g="nose">향신료</span>
           </div>
         </div>
+      </div>
+      <div class="divider" style="margin:.75rem 0"></div>
+      <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:12px">
         <div>
-          <div class="sub-label">👅 팔레트 (Palate)</div>
+          <div class="sub-label">팔레트 (Palate)</div>
           <div class="tags-wrap">
             <span class="tag" data-g="palate">달콤함</span>
             <span class="tag" data-g="palate">쓴맛</span>
@@ -361,7 +364,7 @@
         </div>
       </div>
       <div class="divider" style="margin:.75rem 0"></div>
-      <div class="sub-label">✨ 피니쉬 (Finish)</div>
+      <div class="sub-label">피니쉬 (Finish)</div>
       <div class="tags-wrap" style="margin-bottom:14px">
         <span class="tag" data-g="finish">짧음</span>
         <span class="tag" data-g="finish">중간</span>
@@ -372,11 +375,7 @@
         <span class="tag" data-g="finish">오크 타닌</span>
         <span class="tag" data-g="finish">민트/멘솔</span>
       </div>
-      <div class="divider" style="margin:.75rem 0"></div>
-      <div class="field">
-        <label>테이스팅 메모</label>
-        <textarea id="tasting_memo" rows="4" placeholder="노즈, 팔레트, 피니쉬 전반적인 메모..."></textarea>
-      </div>
+
     </div>
   </div>
 
@@ -446,8 +445,8 @@
         </div>
       </div>
       <div class="field">
-        <label>추가 메모</label>
-        <textarea id="extra_memo" rows="3" placeholder="시음 맥락, 함께한 사람 등..."></textarea>
+        <label>총평</label>
+        <textarea id="extra_memo" rows="3" placeholder="시음 전반에 대한 총평을 작성해 주세요..."></textarea>
       </div>
     </div>
   </div>
@@ -539,11 +538,9 @@ function loadImg(input) {
   reader.onload = e => {
     imgBase64 = e.target.result;
     const slot = document.getElementById('imgSlot');
-    const col = document.getElementById('fieldCol');
-    const h = col.getBoundingClientRect().height;
     slot.innerHTML = `
-      <div class="img-preview" style="height:${h}px">
-        <img src="${imgBase64}" style="height:${h}px">
+      <div style="position:relative;width:100%;height:100%">
+        <img src="${imgBase64}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius);display:block">
         <button class="img-remove" onclick="removeImg()">✕</button>
       </div>`;
   };
@@ -553,10 +550,10 @@ function loadImg(input) {
 function removeImg() {
   imgBase64 = null;
   document.getElementById('imgSlot').innerHTML = `
-    <div class="img-area" id="imgArea">
+    <div class="img-area" style="width:100%;height:100%">
       <input type="file" accept="image/*" onchange="loadImg(this)">
-      <span style="font-size:22px;pointer-events:none">📷</span>
-      <div class="img-area-label">사진<br>추가</div>
+      <span style="font-size:28px;pointer-events:none">📷</span>
+      <div class="img-area-label">사진 추가<br><span style="font-size:10px;color:var(--text-hint)">1 : 1 비율 권장</span></div>
     </div>`;
 }
 
@@ -588,7 +585,7 @@ async function saveNote() {
     nose: getSelectedTags('nose'),
     palate: getSelectedTags('palate'),
     finish: getSelectedTags('finish'),
-    tasting_memo: document.getElementById('tasting_memo').value,
+    tasting_memo: '',
     nose_score: nose,
     palate_score: palate,
     finish_score: finish,
@@ -645,15 +642,17 @@ async function loadNotes() {
   count.textContent = data.length + '개';
   list.innerHTML = data.map(n => `
     <div class="note-card" onclick="openDetail(${JSON.stringify(n).replace(/"/g,'&quot;')})">
-      <div class="note-thumb">
-        ${n.image_url ? `<img src="${n.image_url}">` : '🥃'}
+      <div class="note-thumb" style="width:80px;height:80px;border-radius:10px;overflow:hidden;flex-shrink:0;background:var(--amber-light);display:flex;align-items:center;justify-content:center;font-size:28px">
+        ${n.image_url ? `<img src="${n.image_url}" style="width:100%;height:100%;object-fit:cover">` : '🥃'}
       </div>
       <div class="note-info">
-        <h3>${n.whisky_name || '-'}</h3>
-        <div class="note-meta">
-          ${n.region ? `<span class="pill">${n.region}</span>` : ''}
+        <h3 style="font-size:15px;font-weight:600;margin-bottom:4px">${n.whisky_name || '-'}</h3>
+        <div style="font-size:12px;color:var(--text-sub)">
+          ${n.age ? `<span>${n.age}년</span>` : '<span>NAS</span>'}
+          ${n.region ? ` · <span>${n.region}</span>` : ''}
+        </div>
+        <div class="note-meta" style="margin-top:4px">
           ${n.distillery ? `<span>${n.distillery}</span>` : ''}
-          ${n.age ? `<span>${n.age}</span>` : ''}
           ${n.tasting_date ? `<span>${n.tasting_date}</span>` : ''}
         </div>
       </div>
@@ -678,9 +677,9 @@ function openDetail(note) {
     ${row('🪣 캐스크', note.cask_type?.join(', '))}
     ${row('🎨 컬러', note.color_note || note.color)}
     <div class="divider"></div>
-    ${row('👃 노즈', note.nose?.join(', '))}
-    ${row('👅 팔레트', note.palate?.join(', '))}
-    ${row('✨ 피니쉬', note.finish?.join(', '))}
+    ${row('노즈', note.nose?.join(', '))}
+    ${row('팔레트', note.palate?.join(', '))}
+    ${row('피니쉬', note.finish?.join(', '))}
     ${note.tasting_memo ? `<div style="background:var(--bg);border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.6;margin:8px 0;color:var(--text-sub)">${note.tasting_memo}</div>` : ''}
     <div class="divider"></div>
     <div style="display:flex;justify-content:space-around;text-align:center;margin-bottom:1rem">
