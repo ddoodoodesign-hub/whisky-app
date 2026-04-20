@@ -229,11 +229,7 @@ nav{background:var(--card);border-bottom:.5px solid var(--border-md);padding:0 1
       <div class="score-row"><label>맛 (Palate)</label><input type="range" min="1" max="20" value="16" id="palate_score" oninput="updateScore()"><span class="score-val" id="v-palate">16</span><span class="score-max">/20</span></div>
       <div class="score-row"><label>피니쉬</label><input type="range" min="1" max="20" value="16" id="finish_score" oninput="updateScore()"><span class="score-val" id="v-finish">16</span><span class="score-max">/20</span></div>
       <div class="score-row"><label>바디 & 질감</label><input type="range" min="1" max="20" value="16" id="body_texture_score" oninput="updateScore()"><span class="score-val" id="v-body">16</span><span class="score-max">/20</span></div>
-      <div class="score-row"><label>밸런스</label><input type="range" min="1" max="20" value="16" id="balance_score" oninput="updateScore()"><span class="score-val" id="v-balance">16</span><span class="score-max">/20</span></div>
-      <div class="score-row"><label>가성비</label><input type="range" min="1" max="10" value="7" id="value_score" oninput="updateScore()"><span class="score-val" id="v-value">7</span><span class="score-max">/10</span></div>
-      <div class="score-row"><label>접근성</label><input type="range" min="1" max="10" value="7" id="accessibility_score" oninput="updateScore()"><span class="score-val" id="v-access">7</span><span class="score-max">/10</span></div>
-      <div class="score-row"><label>완성도</label><input type="range" min="1" max="10" value="7" id="completeness_score" oninput="updateScore()"><span class="score-val" id="v-complete">7</span><span class="score-max">/10</span></div>
-      <div class="divider"></div>
+      <div class="score-row"><label>밸런스</label><input type="range" min="1" max="20" value="16" id="balance_score" oninput="updateScore()"><span class="score-val" id="v-balance">16</span><span class="score-max">/20</span></div>      <div class="divider"></div>
       <div class="total-row">
         <span style="font-size:13px;color:var(--text-sub);font-weight:500">총점</span>
         <div style="display:flex;align-items:baseline;gap:6px">
@@ -367,17 +363,12 @@ function updateScore(){
   const fi=+document.getElementById('finish_score').value;
   const bo=+document.getElementById('body_texture_score').value;
   const ba=+document.getElementById('balance_score').value;
-  const va=+document.getElementById('value_score').value;
-  const ac=+document.getElementById('accessibility_score').value;
-  const co=+document.getElementById('completeness_score').value;
+
   document.getElementById('v-nose').textContent=n;
   document.getElementById('v-palate').textContent=pa;
   document.getElementById('v-finish').textContent=fi;
   document.getElementById('v-body').textContent=bo;
   document.getElementById('v-balance').textContent=ba;
-  document.getElementById('v-value').textContent=va;
-  document.getElementById('v-access').textContent=ac;
-  document.getElementById('v-complete').textContent=co;
   const total=n+pa+fi+bo+ba;
   animateTotal(total);
   drawRadar([n/20,pa/20,fi/20,bo/20,ba/20]);
@@ -439,10 +430,11 @@ function drawRadar(vals){
 
 async function saveNote(){
   const btn=document.getElementById('saveBtn');
+  const editId=btn.dataset.editId||null;
   const name=document.getElementById('whisky_name').value.trim();
   if(!name){showToast('위스키 이름을 입력해주세요!');return;}
-  btn.disabled=true;btn.textContent='저장 중...';
-  const n=+document.getElementById('nose_score').value,pa=+document.getElementById('palate_score').value,fi=+document.getElementById('finish_score').value,bo=+document.getElementById('body_texture_score').value,ba=+document.getElementById('balance_score').value,va=0,ac=0,co=0;
+  btn.disabled=true;btn.textContent=editId?'수정 중...':'저장 중...';
+  const n=+document.getElementById('nose_score').value,pa=+document.getElementById('palate_score').value,fi=+document.getElementById('finish_score').value,bo=+document.getElementById('body_texture_score').value,ba=+document.getElementById('balance_score').value;
   const data={
     whisky_name:name,age:document.getElementById('age').value,abv:document.getElementById('abv').value,
     region:document.getElementById('region').value,distillery:document.getElementById('distillery').value,
@@ -454,18 +446,24 @@ async function saveNote(){
     nose:getTags('nose'),palate:getTags('palate'),finish:getTags('finish'),body_texture:getTags('body'),
     tasting_memo:'',
     nose_score:n,palate_score:pa,finish_score:fi,body_texture_score:bo,balance_score:ba,
-    value_score:va,accessibility_score:ac,completeness_score:co,
+
     total_score:n+pa+fi+bo+ba,
     one_line:document.getElementById('one_line').value,pairing:document.getElementById('pairing').value,
     repurchase:document.getElementById('repurchase').value,extra_memo:document.getElementById('extra_memo').value,
     image_url:imgBase64,
     search_tags:[...getTags('nose'),...getTags('palate'),...getTags('finish'),...getTags('body')],
   };
-  const{data:saved,error}=await sb.from('whisky_notes').insert([data]).select();
+  let saved,error;
+  if(editId){
+    ({data:saved,error}=await sb.from('whisky_notes').update(data).eq('id',editId).select());
+  } else {
+    ({data:saved,error}=await sb.from('whisky_notes').insert([data]).select());
+  }
   btn.disabled=false;btn.textContent='저장하기';
   if(error){showToast('저장 실패: '+error.message);return;}
   lastSaved=saved?saved[0]:data;
-  showToast('✓ 저장됐어요!');
+  btn.dataset.editId='';btn.textContent='저장하기';
+  showToast(editId?'✓ 수정됐어요!':'✓ 저장됐어요!');
   setTimeout(()=>openShareModal(),800);
   resetForm();
 }
@@ -494,18 +492,19 @@ function renderNotes(notes){
   }
   count.textContent=notes.length+'개';
   list.innerHTML=notes.map(n=>`
-    <div class="note-card">
+    <div class="note-card" style="position:relative">
       <div class="note-img" onclick='openDetail(${JSON.stringify(n).replace(/'/g,"&#39;")})'>
         ${n.image_url?`<img src="${n.image_url}">`:'🥃'}
+      </div>
+      <button class="note-menu-btn" onclick="toggleMenu(event,'menu-${n.id}')" style="position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,0.45);color:#fff;border:none;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;z-index:10">···</button>
+      <div id="menu-${n.id}" style="display:none;position:absolute;top:40px;right:8px;background:var(--card);border:.5px solid var(--border-md);border-radius:var(--radius-sm);overflow:hidden;z-index:20;min-width:100px;box-shadow:0 4px 16px rgba(0,0,0,0.12)">
+        <button onclick="editNote('${n.id}')" style="width:100%;padding:10px 14px;border:none;background:transparent;color:var(--text);font-size:13px;text-align:left;cursor:pointer;display:block">수정</button>
+        <button onclick="deleteNote('${n.id}')" style="width:100%;padding:10px 14px;border:none;background:transparent;color:#e00;font-size:13px;text-align:left;cursor:pointer;display:block;border-top:.5px solid var(--border)">삭제</button>
       </div>
       <div class="note-body" onclick='openDetail(${JSON.stringify(n).replace(/'/g,"&#39;")})'>
         <div class="note-name">${n.whisky_name||'-'}</div>
         <div class="note-meta-s">${n.age||'NAS'}${n.region?' · '+n.region:''}</div>
         <div class="note-score-b">${n.total_score||0}<span> / 100</span></div>
-      </div>
-      <div class="note-actions">
-        <button class="note-act-btn" onclick="editNote('${n.id}')">수정</button>
-        <button class="note-act-btn del" onclick="deleteNote('${n.id}')">삭제</button>
       </div>
     </div>`).join('');
 }
@@ -526,7 +525,60 @@ async function deleteNote(id){
   showToast('삭제됐어요');loadNotes();
 }
 
-function editNote(id){showToast('수정 기능은 준비 중이에요');}
+function toggleMenu(e,menuId){
+  e.stopPropagation();
+  document.querySelectorAll('[id^="menu-"]').forEach(m=>{if(m.id!==menuId)m.style.display='none';});
+  const m=document.getElementById(menuId);
+  m.style.display=m.style.display==='block'?'none':'block';
+}
+document.addEventListener('click',()=>document.querySelectorAll('[id^="menu-"]').forEach(m=>m.style.display='none'));
+
+function editNote(id){
+  const n=allNotes.find(x=>x.id===id);
+  if(!n){showToast('데이터를 찾을 수 없어요');return;}
+  document.querySelectorAll('[id^="menu-"]').forEach(m=>m.style.display='none');
+  // 폼에 기존 데이터 채우기
+  document.getElementById('whisky_name').value=n.whisky_name||'';
+  document.getElementById('age').value=n.age||'';
+  document.getElementById('abv').value=n.abv||'';
+  document.getElementById('region').value=n.region||'';
+  document.getElementById('distillery').value=n.distillery||'';
+  document.getElementById('tasting_date').value=n.tasting_date||'';
+  document.getElementById('manufacture_date').value=n.manufacture_date||'';
+  document.getElementById('price').value=n.price||'';
+  document.getElementById('color_note').value=n.color_note||'';
+  document.getElementById('one_line').value=n.one_line||'';
+  document.getElementById('pairing').value=n.pairing||'';
+  document.getElementById('repurchase').value=n.repurchase||'★★★★★ 반드시';
+  document.getElementById('extra_memo').value=n.extra_memo||'';
+  // 이미지
+  if(n.image_url){
+    imgBase64=n.image_url;
+    document.getElementById('imgSlot').innerHTML=`<div style="position:relative;aspect-ratio:1/1"><img src="${n.image_url}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius);display:block"><button onclick="removeImg()" style="position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;border:none;cursor:pointer;font-size:14px">✕</button></div>`;
+  }
+  // 태그 복원
+  document.querySelectorAll('.tag').forEach(t=>t.classList.remove('on-brown','on-blue','on-amber'));
+  const tagMap={class:n.classification?[n.classification]:[],cask:n.cask_type||[],nose:n.nose||[],palate:n.palate||[],finish:n.finish||[],body:n.body_texture||[]};
+  Object.entries(tagMap).forEach(([g,vals])=>{
+    const cls=g==='cask'||g==='class'?'on-blue':g==='body'?'on-amber':'on-brown';
+    document.querySelectorAll(`.tag[data-g="${g}"]`).forEach(t=>{if(vals.includes(t.textContent))t.classList.add(cls);});
+  });
+  // 점수 복원
+  ['nose','palate','finish','body_texture','balance'].forEach(k=>{
+    const el=document.getElementById(k+'_score');
+    const vEl=document.getElementById('v-'+k.replace('_texture','').replace('body_texture','body'));
+    if(el&&n[k+'_score']){el.value=n[k+'_score'];if(vEl)vEl.textContent=n[k+'_score'];}
+  });
+  updateScore();
+  // 수정 모드 저장 버튼
+  const btn=document.getElementById('saveBtn');
+  btn.textContent='수정 저장하기';
+  btn.dataset.editId=id;
+  // 페이지 이동 + 스크롤
+  showPage('form',document.querySelector('.nav-tab'));
+  setTimeout(()=>window.scrollTo({top:0,behavior:'smooth'}),100);
+  showToast('수정 내용을 입력하고 저장해주세요');
+}
 
 function openDetail(n){
   if(typeof n==='string')n=JSON.parse(n);
@@ -545,7 +597,7 @@ function openDetail(n){
     <div class="divider"></div>
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center;margin-bottom:1rem">
       ${sb2('향',n.nose_score,20)}${sb2('맛',n.palate_score,20)}${sb2('피니쉬',n.finish_score,20)}${sb2('바디',n.body_texture_score,20)}
-      ${sb2('밸런스',n.balance_score,20)}${sb2('가성비',n.value_score,10)}${sb2('접근성',n.accessibility_score,10)}${sb2('완성도',n.completeness_score,10)}
+      ${sb2('밸런스',n.balance_score,20)}
     </div>
     <div style="text-align:center;margin-bottom:1rem"><span style="font-size:40px;font-weight:700;color:var(--amber-dark)">${n.total_score||0}</span><span style="font-size:14px;color:var(--text-hint)"> / 100</span></div>
     ${n.one_line?`<div style="font-size:14px;font-weight:500;margin-bottom:.5rem">"${n.one_line}"</div>`:''}
