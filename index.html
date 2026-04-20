@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🥃 위스키 테이스팅 노트</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg: #F7F4EF;
+    --card: #FFFFFF;
+    --border: rgba(0,0,0,0.08);
+    --border-md: rgba(0,0,0,0.14);
+    --text: #1C1A17;
+    --text-sub: #6B6560;
+    --text-hint: #A09990;
+    --amber: #C47D2B;
+    --amber-light: #FDF3E3;
+    --amber-dark: #8B5210;
+    --brown: #4A1B0C;
+    --brown-light: #F5EBE6;
+    --blue-dark: #042C53;
+    --blue-light: #E6F1FB;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, 'Apple SD Gothic Neo', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* NAV */
+  nav {
+    background: var(--card);
+    border-bottom: 0.5px solid var(--border-md);
+    padding: 0 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-logo { font-size: 15px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; }
+  .nav-tabs { display: flex; gap: 4px; }
+  .nav-tab {
+    padding: 6px 14px; border-radius: 20px; font-size: 13px;
+    border: none; background: transparent; color: var(--text-sub);
+    cursor: pointer; transition: .15s;
+  }
+  .nav-tab.active { background: var(--amber-light); color: var(--amber-dark); font-weight: 500; }
+
+  /* PAGES */
+  .page { display: none; max-width: 720px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+  .page.active { display: block; }
+
+  /* SECTION */
+  .section { margin-bottom: 1.25rem; }
+  .section-label {
+    font-size: 10px; font-weight: 600; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--text-hint); margin-bottom: .5rem;
+  }
+  .card {
+    background: var(--card); border: 0.5px solid var(--border);
+    border-radius: var(--radius); padding: 1rem 1.25rem;
+  }
+
+  /* FIELDS */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 11px; color: var(--text-sub); font-weight: 500; }
+  .field input, .field select, .field textarea {
+    font-size: 13px; border: 0.5px solid var(--border-md);
+    border-radius: var(--radius-sm); padding: 8px 10px;
+    background: var(--bg); color: var(--text);
+    width: 100%; outline: none; font-family: inherit;
+    transition: border-color .15s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--amber);
+  }
+  .field textarea { resize: none; line-height: 1.6; }
+
+  /* IMAGE */
+  .info-row { display: grid; grid-template-columns: 120px 1fr; gap: 14px; align-items: stretch; }
+  .img-slot { display: flex; flex-direction: column; }
+  .img-area {
+    border: 1.5px dashed var(--border-md); border-radius: var(--radius);
+    flex: 1; min-height: 140px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 6px;
+    cursor: pointer; transition: .15s; position: relative; overflow: hidden;
+    background: var(--bg);
+  }
+  .img-area:hover { border-color: var(--amber); background: var(--amber-light); }
+  .img-area input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .img-area-label { font-size: 11px; color: var(--text-hint); text-align: center; line-height: 1.5; pointer-events: none; }
+  .img-preview { position: relative; flex: 1; }
+  .img-preview img { width: 120px; height: 100%; min-height: 140px; object-fit: cover; border-radius: var(--radius); display: block; }
+  .img-remove {
+    position: absolute; top: 6px; right: 6px; width: 22px; height: 22px;
+    border-radius: 50%; background: rgba(0,0,0,.6); color: #fff;
+    font-size: 12px; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* CASK TAGS */
+  .tags-wrap { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+  .tag {
+    font-size: 12px; padding: 5px 11px;
+    border: 0.5px solid var(--border-md); border-radius: 20px;
+    background: var(--bg); color: var(--text-sub);
+    cursor: pointer; transition: .15s; user-select: none;
+  }
+  .tag:hover { background: var(--card); color: var(--text); }
+  .tag.on-brown { background: var(--brown); border-color: var(--brown); color: #F5C4B3; }
+  .tag.on-blue { background: var(--blue-dark); border-color: var(--blue-dark); color: #B5D4F4; }
+  .tag.on-amber { background: var(--amber); border-color: var(--amber); color: #FFF; }
+
+  /* COLOR PALETTE */
+  .color-strip { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 8px; }
+  .color-dot {
+    width: 30px; height: 30px; border-radius: 50%;
+    border: 2px solid transparent; cursor: pointer; transition: .15s;
+  }
+  .color-dot:hover { transform: scale(1.1); }
+  .color-dot.active { border-color: var(--text); }
+
+  /* NOSE-PALATE */
+  .np-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .sub-label { font-size: 11px; color: var(--text-hint); margin-bottom: 5px; }
+
+  /* SCORES */
+  .score-row { display: flex; align-items: center; gap: 10px; }
+  .score-row label { font-size: 12px; color: var(--text-sub); font-weight: 500; min-width: 56px; }
+  .score-row input[type=range] { flex: 1; accent-color: var(--amber); }
+  .score-val { font-size: 13px; font-weight: 600; color: var(--text); min-width: 26px; text-align: right; }
+  .score-max { font-size: 11px; color: var(--text-hint); }
+  .total-row { display: flex; align-items: center; justify-content: space-between; }
+  .total-num { font-size: 40px; font-weight: 700; color: var(--amber-dark); }
+  .divider { height: 0.5px; background: var(--border); margin: 1rem 0; }
+
+  /* BUTTONS */
+  .btn-save {
+    width: 100%; padding: 13px; border-radius: var(--radius);
+    background: var(--amber-dark); color: #fff;
+    font-size: 14px; font-weight: 600; border: none;
+    cursor: pointer; transition: .15s; letter-spacing: .02em;
+  }
+  .btn-save:hover { background: var(--brown); }
+  .btn-save:active { transform: scale(.98); }
+  .btn-save:disabled { background: var(--text-hint); cursor: not-allowed; }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px);
+    background: var(--text); color: #fff; padding: 10px 20px;
+    border-radius: 20px; font-size: 13px; transition: transform .3s;
+    z-index: 999; white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* LIST PAGE */
+  .list-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .list-header h2 { font-size: 15px; font-weight: 600; }
+  .list-count { font-size: 12px; color: var(--text-hint); }
+  .note-card {
+    background: var(--card); border: 0.5px solid var(--border);
+    border-radius: var(--radius); padding: 1rem 1.25rem;
+    margin-bottom: .75rem; cursor: pointer; transition: .15s;
+    display: grid; grid-template-columns: 60px 1fr auto; gap: 12px; align-items: center;
+  }
+  .note-card:hover { border-color: var(--border-md); transform: translateY(-1px); }
+  .note-thumb {
+    width: 60px; height: 60px; border-radius: 8px;
+    background: var(--amber-light); display: flex; align-items: center;
+    justify-content: center; font-size: 24px; overflow: hidden; flex-shrink: 0;
+  }
+  .note-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .note-info h3 { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+  .note-meta { font-size: 12px; color: var(--text-sub); display: flex; gap: 8px; flex-wrap: wrap; }
+  .note-score {
+    font-size: 22px; font-weight: 700; color: var(--amber-dark);
+    text-align: right; flex-shrink: 0;
+  }
+  .note-score span { font-size: 11px; color: var(--text-hint); font-weight: 400; display: block; }
+  .pill {
+    font-size: 11px; padding: 2px 8px; border-radius: 20px;
+    background: var(--amber-light); color: var(--amber-dark); display: inline-block;
+  }
+  .empty-state { text-align: center; padding: 4rem 0; color: var(--text-hint); }
+  .empty-state p { font-size: 14px; margin-top: .5rem; }
+
+  /* DETAIL MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.5);
+    z-index: 200; display: none; align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--card); border-radius: 20px 20px 0 0;
+    width: 100%; max-width: 720px; max-height: 90vh;
+    overflow-y: auto; padding: 1.5rem;
+  }
+  .modal-handle { width: 40px; height: 4px; background: var(--border-md); border-radius: 2px; margin: 0 auto 1.5rem; }
+  .modal-title { font-size: 20px; font-weight: 700; margin-bottom: .25rem; }
+  .modal-sub { font-size: 13px; color: var(--text-sub); margin-bottom: 1.5rem; }
+  .detail-row { display: flex; gap: 8px; margin-bottom: .5rem; }
+  .detail-label { font-size: 12px; color: var(--text-hint); min-width: 80px; }
+  .detail-val { font-size: 13px; color: var(--text); }
+  .modal-close {
+    position: absolute; top: 1rem; right: 1rem;
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--bg); border: none; cursor: pointer;
+    font-size: 16px; display: flex; align-items: center; justify-content: center;
+  }
+
+  @media (max-width: 520px) {
+    .info-row, .np-grid, .grid2, .grid3 { grid-template-columns: 1fr; }
+    .img-slot { display: none; }
+    .note-card { grid-template-columns: 48px 1fr auto; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">🥃 위스키 노트</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('form')">기록하기</button>
+    <button class="nav-tab" onclick="showPage('list')">컬렉션</button>
+  </div>
+</nav>
+
+<!-- FORM PAGE -->
+<div class="page active" id="page-form">
+
+  <!-- 기본 정보 -->
+  <div class="section">
+    <div class="section-label">기본 정보</div>
+    <div class="card">
+      <div class="info-row">
+        <div class="img-slot">
+          <div class="img-area" id="imgSlot">
+            <input type="file" accept="image/*" onchange="loadImg(this)">
+            <span style="font-size:22px;pointer-events:none">📷</span>
+            <div class="img-area-label">사진<br>추가</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px" id="fieldCol">
+          <div class="field">
+            <label>위스키 이름</label>
+            <input type="text" id="whisky_name" placeholder="예) Ardbeg 10">
+          </div>
+          <div class="grid3">
+            <div class="field"><label>숙성 연도</label><input type="text" id="age" placeholder="10Y / NAS"></div>
+            <div class="field"><label>도수 (ABV)</label><input type="text" id="abv" placeholder="46%"></div>
+            <div class="field"><label>지역</label>
+              <select id="region">
+                <option value="">선택</option>
+                <option>Islay</option><option>Highland</option><option>Speyside</option>
+                <option>Lowland</option><option>Campbeltown</option><option>Island</option>
+                <option>Ireland</option><option>Japan</option><option>USA</option>
+                <option>Canada</option><option>기타</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid3">
+            <div class="field"><label>증류소</label><input type="text" id="distillery" placeholder="예) Ardbeg"></div>
+            <div class="field"><label>테이스팅 날짜</label><input type="date" id="tasting_date"></div>
+            <div class="field"><label>가격 / 구입처</label><input type="text" id="price" placeholder="85,000원"></div>
+          </div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="field" style="margin-bottom:6px"><label>캐스크 타입</label></div>
+      <div class="tags-wrap" id="cask-tags">
+        <span class="tag" data-g="cask">Ex-Bourbon</span>
+        <span class="tag" data-g="cask">Ex-Sherry (Oloroso)</span>
+        <span class="tag" data-g="cask">Ex-Sherry (PX)</span>
+        <span class="tag" data-g="cask">Ex-Wine</span>
+        <span class="tag" data-g="cask">Ex-Port</span>
+        <span class="tag" data-g="cask">Ex-Rum</span>
+        <span class="tag" data-g="cask">Ex-Cognac</span>
+        <span class="tag" data-g="cask">New Oak</span>
+        <span class="tag" data-g="cask">Virgin Oak</span>
+        <span class="tag" data-g="cask">STR</span>
+        <span class="tag" data-g="cask">Mizunara</span>
+        <span class="tag" data-g="cask">혼합</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 컬러 -->
+  <div class="section">
+    <div class="section-label">컬러</div>
+    <div class="card">
+      <div class="field">
+        <label>색상 메모</label>
+        <input type="text" id="color_note" placeholder="예) 딥 골드, 앰버...">
+      </div>
+      <div class="color-strip" id="colorStrip">
+        <div class="color-dot" data-c="연한 황금" style="background:#F5E6A3"></div>
+        <div class="color-dot" data-c="황금" style="background:#D4A827"></div>
+        <div class="color-dot" data-c="딥 골드" style="background:#B8860B"></div>
+        <div class="color-dot" data-c="앰버" style="background:#FFBF00"></div>
+        <div class="color-dot" data-c="딥 앰버" style="background:#CC7722"></div>
+        <div class="color-dot" data-c="구리" style="background:#B87333"></div>
+        <div class="color-dot" data-c="마호가니" style="background:#6E2B0E"></div>
+        <div class="color-dot" data-c="루비" style="background:#9B111E"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 노즈 팔레트 피니쉬 -->
+  <div class="section">
+    <div class="section-label">노즈 · 팔레트 · 피니쉬</div>
+    <div class="card">
+      <div class="np-grid" style="margin-bottom:12px">
+        <div>
+          <div class="sub-label">👃 노즈 (Nose)</div>
+          <div class="tags-wrap">
+            <span class="tag" data-g="nose">피트/스모키</span>
+            <span class="tag" data-g="nose">바닐라</span>
+            <span class="tag" data-g="nose">카라멜</span>
+            <span class="tag" data-g="nose">과일 (열대)</span>
+            <span class="tag" data-g="nose">과일 (시트러스)</span>
+            <span class="tag" data-g="nose">과일 (건과)</span>
+            <span class="tag" data-g="nose">꽃향</span>
+            <span class="tag" data-g="nose">허브/식물</span>
+            <span class="tag" data-g="nose">셰리/포도주</span>
+            <span class="tag" data-g="nose">오크/나무</span>
+            <span class="tag" data-g="nose">바다/소금</span>
+            <span class="tag" data-g="nose">향신료</span>
+          </div>
+        </div>
+        <div>
+          <div class="sub-label">👅 팔레트 (Palate)</div>
+          <div class="tags-wrap">
+            <span class="tag" data-g="palate">달콤함</span>
+            <span class="tag" data-g="palate">쓴맛</span>
+            <span class="tag" data-g="palate">신맛</span>
+            <span class="tag" data-g="palate">짠맛</span>
+            <span class="tag" data-g="palate">풍성함</span>
+            <span class="tag" data-g="palate">드라이</span>
+            <span class="tag" data-g="palate">피트</span>
+            <span class="tag" data-g="palate">오일리</span>
+            <span class="tag" data-g="palate">과일</span>
+            <span class="tag" data-g="palate">셰리</span>
+            <span class="tag" data-g="palate">오크/바닐라</span>
+            <span class="tag" data-g="palate">향신료</span>
+          </div>
+        </div>
+      </div>
+      <div class="divider" style="margin:.75rem 0"></div>
+      <div class="sub-label">✨ 피니쉬 (Finish)</div>
+      <div class="tags-wrap" style="margin-bottom:14px">
+        <span class="tag" data-g="finish">짧음</span>
+        <span class="tag" data-g="finish">중간</span>
+        <span class="tag" data-g="finish">길고 드라이</span>
+        <span class="tag" data-g="finish">길고 달콤</span>
+        <span class="tag" data-g="finish">따뜻한 향신료</span>
+        <span class="tag" data-g="finish">피트/스모키 여운</span>
+        <span class="tag" data-g="finish">오크 타닌</span>
+        <span class="tag" data-g="finish">민트/멘솔</span>
+      </div>
+      <div class="divider" style="margin:.75rem 0"></div>
+      <div class="field">
+        <label>테이스팅 메모</label>
+        <textarea id="tasting_memo" rows="4" placeholder="노즈, 팔레트, 피니쉬 전반적인 메모..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- 점수 -->
+  <div class="section">
+    <div class="section-label">항목별 점수</div>
+    <div class="card">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="score-row">
+          <label>노즈</label>
+          <input type="range" min="1" max="25" value="18" id="nose_score" oninput="updateScore(this,'nose-val')">
+          <span class="score-val" id="nose-val">18</span>
+          <span class="score-max">/25</span>
+        </div>
+        <div class="score-row">
+          <label>팔레트</label>
+          <input type="range" min="1" max="25" value="18" id="palate_score" oninput="updateScore(this,'palate-val')">
+          <span class="score-val" id="palate-val">18</span>
+          <span class="score-max">/25</span>
+        </div>
+        <div class="score-row">
+          <label>피니쉬</label>
+          <input type="range" min="1" max="25" value="18" id="finish_score" oninput="updateScore(this,'finish-val')">
+          <span class="score-val" id="finish-val">18</span>
+          <span class="score-max">/25</span>
+        </div>
+        <div class="score-row">
+          <label>밸런스</label>
+          <input type="range" min="1" max="25" value="18" id="balance_score" oninput="updateScore(this,'balance-val')">
+          <span class="score-val" id="balance-val">18</span>
+          <span class="score-max">/25</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="total-row">
+        <span style="font-size:13px;color:var(--text-sub);font-weight:500">총점</span>
+        <div style="display:flex;align-items:baseline;gap:6px">
+          <span class="total-num" id="total-score">72</span>
+          <span style="font-size:14px;color:var(--text-hint)">/ 100</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 총평 -->
+  <div class="section">
+    <div class="section-label">총평 & 추천</div>
+    <div class="card">
+      <div class="field" style="margin-bottom:10px">
+        <label>한 줄 총평</label>
+        <input type="text" id="one_line" placeholder="예) 강렬한 피트와 달콤한 바닐라의 절묘한 균형">
+      </div>
+      <div class="grid2" style="margin-bottom:10px">
+        <div class="field">
+          <label>추천 페어링</label>
+          <input type="text" id="pairing" placeholder="예) 다크 초콜릿, 훈제 치즈">
+        </div>
+        <div class="field">
+          <label>재구매 의향</label>
+          <select id="repurchase">
+            <option>★★★★★ 반드시</option>
+            <option>★★★★ 기회가 되면</option>
+            <option>★★★ 가격 따라</option>
+            <option>★★ 보류</option>
+            <option>★ 비추</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>추가 메모</label>
+        <textarea id="extra_memo" rows="3" placeholder="시음 맥락, 함께한 사람 등..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-save" id="saveBtn" onclick="saveNote()">저장하기</button>
+</div>
+
+<!-- LIST PAGE -->
+<div class="page" id="page-list">
+  <div class="list-header">
+    <h2>내 컬렉션</h2>
+    <span class="list-count" id="list-count">0개</span>
+  </div>
+  <div id="notes-list">
+    <div class="empty-state">
+      <div style="font-size:48px">🥃</div>
+      <p>아직 기록이 없어요.<br>첫 테이스팅 노트를 작성해보세요!</p>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-handle"></div>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://zsqeoxisqzymeramfmqc.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzcWVveGlzcXp5bWVyYW1mbXFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2NzY1NTksImV4cCI6MjA5MjI1MjU1OX0.NpUX1zmiS-KUulNrHx6_2_6UGDexpRZLZTxD6iGnt-g';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let imgBase64 = null;
+let selectedColor = '';
+
+// NAV
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  event.target.classList.add('active');
+  if (page === 'list') loadNotes();
+}
+
+// SCORE
+function updateScore(el, valId) {
+  document.getElementById(valId).textContent = el.value;
+  const total = ['nose_score','palate_score','finish_score','balance_score']
+    .reduce((s,id) => s + parseInt(document.getElementById(id).value), 0);
+  document.getElementById('total-score').textContent = total;
+}
+
+// COLOR
+document.getElementById('colorStrip').addEventListener('click', e => {
+  const dot = e.target.closest('.color-dot');
+  if (!dot) return;
+  document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+  dot.classList.add('active');
+  selectedColor = dot.dataset.c;
+  document.getElementById('color_note').value = dot.dataset.c;
+});
+
+// TAGS
+document.querySelectorAll('.tag').forEach(tag => {
+  tag.addEventListener('click', () => {
+    const g = tag.dataset.g;
+    const cls = g === 'cask' ? 'on-blue' : g === 'nose' || g === 'palate' || g === 'finish' ? 'on-brown' : 'on-amber';
+    tag.classList.toggle(cls);
+  });
+});
+
+function getSelectedTags(group) {
+  return [...document.querySelectorAll(`.tag[data-g="${group}"]`)]
+    .filter(t => t.classList.contains('on-brown') || t.classList.contains('on-blue') || t.classList.contains('on-amber'))
+    .map(t => t.textContent);
+}
+
+// IMAGE
+function loadImg(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    imgBase64 = e.target.result;
+    const slot = document.getElementById('imgSlot');
+    const col = document.getElementById('fieldCol');
+    const h = col.getBoundingClientRect().height;
+    slot.innerHTML = `
+      <div class="img-preview" style="height:${h}px">
+        <img src="${imgBase64}" style="height:${h}px">
+        <button class="img-remove" onclick="removeImg()">✕</button>
+      </div>`;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeImg() {
+  imgBase64 = null;
+  document.getElementById('imgSlot').innerHTML = `
+    <div class="img-area" id="imgArea">
+      <input type="file" accept="image/*" onchange="loadImg(this)">
+      <span style="font-size:22px;pointer-events:none">📷</span>
+      <div class="img-area-label">사진<br>추가</div>
+    </div>`;
+}
+
+// SAVE
+async function saveNote() {
+  const btn = document.getElementById('saveBtn');
+  const name = document.getElementById('whisky_name').value.trim();
+  if (!name) { showToast('위스키 이름을 입력해주세요!'); return; }
+
+  btn.disabled = true;
+  btn.textContent = '저장 중...';
+
+  const nose = parseInt(document.getElementById('nose_score').value);
+  const palate = parseInt(document.getElementById('palate_score').value);
+  const finish = parseInt(document.getElementById('finish_score').value);
+  const balance = parseInt(document.getElementById('balance_score').value);
+
+  const data = {
+    whisky_name: name,
+    age: document.getElementById('age').value,
+    abv: document.getElementById('abv').value,
+    region: document.getElementById('region').value,
+    distillery: document.getElementById('distillery').value,
+    tasting_date: document.getElementById('tasting_date').value || null,
+    price: document.getElementById('price').value,
+    cask_type: getSelectedTags('cask'),
+    color: selectedColor,
+    color_note: document.getElementById('color_note').value,
+    nose: getSelectedTags('nose'),
+    palate: getSelectedTags('palate'),
+    finish: getSelectedTags('finish'),
+    tasting_memo: document.getElementById('tasting_memo').value,
+    nose_score: nose,
+    palate_score: palate,
+    finish_score: finish,
+    balance_score: balance,
+    total_score: nose + palate + finish + balance,
+    one_line: document.getElementById('one_line').value,
+    pairing: document.getElementById('pairing').value,
+    repurchase: document.getElementById('repurchase').value,
+    extra_memo: document.getElementById('extra_memo').value,
+    image_url: imgBase64,
+  };
+
+  const { error } = await sb.from('whisky_notes').insert([data]);
+
+  btn.disabled = false;
+  btn.textContent = '저장하기';
+
+  if (error) {
+    showToast('저장 실패: ' + error.message);
+  } else {
+    showToast('✓ 저장됐어요!');
+    resetForm();
+  }
+}
+
+function resetForm() {
+  document.querySelectorAll('input[type=text], input[type=date], textarea').forEach(el => el.value = '');
+  document.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+  document.querySelectorAll('.tag').forEach(t => t.classList.remove('on-brown','on-blue','on-amber'));
+  document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+  document.querySelectorAll('input[type=range]').forEach(r => { r.value = 18; });
+  document.getElementById('nose-val').textContent = '18';
+  document.getElementById('palate-val').textContent = '18';
+  document.getElementById('finish-val').textContent = '18';
+  document.getElementById('balance-val').textContent = '18';
+  document.getElementById('total-score').textContent = '72';
+  selectedColor = '';
+  imgBase64 = null;
+  removeImg();
+}
+
+// LOAD LIST
+async function loadNotes() {
+  const { data, error } = await sb.from('whisky_notes').select('*').order('created_at', { ascending: false });
+  const list = document.getElementById('notes-list');
+  const count = document.getElementById('list-count');
+
+  if (error || !data || data.length === 0) {
+    count.textContent = '0개';
+    list.innerHTML = `<div class="empty-state"><div style="font-size:48px">🥃</div><p>아직 기록이 없어요.<br>첫 테이스팅 노트를 작성해보세요!</p></div>`;
+    return;
+  }
+
+  count.textContent = data.length + '개';
+  list.innerHTML = data.map(n => `
+    <div class="note-card" onclick="openDetail(${JSON.stringify(n).replace(/"/g,'&quot;')})">
+      <div class="note-thumb">
+        ${n.image_url ? `<img src="${n.image_url}">` : '🥃'}
+      </div>
+      <div class="note-info">
+        <h3>${n.whisky_name || '-'}</h3>
+        <div class="note-meta">
+          ${n.region ? `<span class="pill">${n.region}</span>` : ''}
+          ${n.distillery ? `<span>${n.distillery}</span>` : ''}
+          ${n.age ? `<span>${n.age}</span>` : ''}
+          ${n.tasting_date ? `<span>${n.tasting_date}</span>` : ''}
+        </div>
+      </div>
+      <div class="note-score">
+        ${n.total_score || 0}
+        <span>/ 100</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+// DETAIL MODAL
+function openDetail(note) {
+  const content = document.getElementById('modal-content');
+  content.innerHTML = `
+    ${note.image_url ? `<img src="${note.image_url}" style="width:100%;height:200px;object-fit:cover;border-radius:12px;margin-bottom:1rem">` : ''}
+    <div class="modal-title">${note.whisky_name || '-'}</div>
+    <div class="modal-sub">${[note.distillery, note.region, note.age, note.abv].filter(Boolean).join(' · ')}</div>
+    <div class="divider"></div>
+    ${row('📅 날짜', note.tasting_date)}
+    ${row('💰 가격', note.price)}
+    ${row('🪣 캐스크', note.cask_type?.join(', '))}
+    ${row('🎨 컬러', note.color_note || note.color)}
+    <div class="divider"></div>
+    ${row('👃 노즈', note.nose?.join(', '))}
+    ${row('👅 팔레트', note.palate?.join(', '))}
+    ${row('✨ 피니쉬', note.finish?.join(', '))}
+    ${note.tasting_memo ? `<div style="background:var(--bg);border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.6;margin:8px 0;color:var(--text-sub)">${note.tasting_memo}</div>` : ''}
+    <div class="divider"></div>
+    <div style="display:flex;justify-content:space-around;text-align:center;margin-bottom:1rem">
+      ${scoreBox('노즈', note.nose_score, 25)}
+      ${scoreBox('팔레트', note.palate_score, 25)}
+      ${scoreBox('피니쉬', note.finish_score, 25)}
+      ${scoreBox('밸런스', note.balance_score, 25)}
+    </div>
+    <div style="text-align:center;margin-bottom:1rem">
+      <span style="font-size:40px;font-weight:700;color:var(--amber-dark)">${note.total_score}</span>
+      <span style="font-size:14px;color:var(--text-hint)"> / 100</span>
+    </div>
+    <div class="divider"></div>
+    ${note.one_line ? `<div style="font-size:14px;font-weight:500;margin-bottom:.5rem">"${note.one_line}"</div>` : ''}
+    ${row('🍫 페어링', note.pairing)}
+    ${row('🔄 재구매', note.repurchase)}
+    ${note.extra_memo ? `<div style="font-size:12px;color:var(--text-sub);margin-top:.5rem">${note.extra_memo}</div>` : ''}
+  `;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function row(label, val) {
+  if (!val) return '';
+  return `<div class="detail-row"><span class="detail-label">${label}</span><span class="detail-val">${val}</span></div>`;
+}
+
+function scoreBox(label, score, max) {
+  return `<div><div style="font-size:20px;font-weight:700;color:var(--amber-dark)">${score || 0}</div><div style="font-size:11px;color:var(--text-hint)">${label} / ${max}</div></div>`;
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modalOverlay') || e.currentTarget.tagName === 'BUTTON') {
+    document.getElementById('modalOverlay').classList.remove('open');
+  }
+}
+
+// TOAST
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Init date
+document.getElementById('tasting_date').value = new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>
