@@ -176,8 +176,8 @@ nav{background:var(--card);border-bottom:.5px solid var(--border-md);padding:0 1
           </div>
         </div>
 
-        <!-- 지역 + 증류소 + 테이스팅날짜 (3열) -->
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;width:100%">
+        <!-- 지역 + 증류소 (2열) -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%">
           <div class="field">
             <label>지역</label>
             <select id="f-region">
@@ -191,10 +191,6 @@ nav{background:var(--card);border-bottom:.5px solid var(--border-md);padding:0 1
           <div class="field">
             <label>증류소</label>
             <input type="text" id="f-distillery" placeholder="예) Ardbeg">
-          </div>
-          <div class="field">
-            <label>테이스팅 날짜</label>
-            <input type="date" id="f-tasting-date">
           </div>
         </div>
 
@@ -338,6 +334,10 @@ nav{background:var(--card);border-bottom:.5px solid var(--border-md);padding:0 1
     <div class="section-label">총평 & 추천</div>
     <div class="card">
       <div class="field" style="margin-bottom:10px">
+        <label>테이스팅 날짜</label>
+        <input type="date" id="f-tasting-date">
+      </div>
+      <div class="field" style="margin-bottom:10px">
         <label>한 줄 총평</label>
         <input type="text" id="f-one-line" placeholder="예) 강렬한 피트와 달콤한 바닐라의 절묘한 균형">
       </div>
@@ -358,10 +358,7 @@ nav{background:var(--card);border-bottom:.5px solid var(--border-md);padding:0 1
           </select>
         </div>
       </div>
-      <div class="field">
-        <label>총평</label>
-        <textarea id="f-memo" rows="3" placeholder="시음 전반에 대한 총평을 작성해 주세요..."></textarea>
-      </div>
+
     </div>
   </div>
 
@@ -603,7 +600,7 @@ async function saveNote() {
     one_line:           document.getElementById('f-one-line').value,
     pairing:            document.getElementById('f-pairing').value,
     repurchase:         document.getElementById('f-repurchase').value,
-    extra_memo:         document.getElementById('f-memo').value,
+    extra_memo:         '',
     image_url:          imgBase64,
     search_tags:        [...getTags('nose'), ...getTags('palate'), ...getTags('finish'), ...getTags('body')],
   };
@@ -734,7 +731,7 @@ function editNote(id) {
   document.getElementById('f-color-note').value    = n.color_note || '';
   document.getElementById('f-one-line').value      = n.one_line || '';
   document.getElementById('f-pairing').value       = n.pairing || '';
-  document.getElementById('f-memo').value          = n.extra_memo || '';
+
   if (n.repurchase) document.getElementById('f-repurchase').value = n.repurchase;
 
   selectedColor = n.color || '';
